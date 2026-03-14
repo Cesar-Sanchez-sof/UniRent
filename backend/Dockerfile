@@ -1,1 +1,22 @@
-FROM php:8.2-fpm`n`n# Instalar dependencias del sistema`nRUN apt-get update && apt-get install -y \`n    git \`n    curl \`n    libpng-dev \`n    libonig-dev \`n    libxml2-dev \`n    libpq-dev \`n    zip \`n    unzip`n`n# Limpiar cache`nRUN apt-get clean && rm -rf /var/lib/apt/lists/*`n`n# Instalar extensiones de PHP necesarias para Laravel y PostgreSQL`nRUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd`n`n# Obtener Composer`nCOPY --from=composer:latest /usr/bin/composer /usr/bin/composer`n`n# Configurar directorio de trabajo`nWORKDIR /var/www`n`n# Copiar el codigo del backend`nCOPY . .`n`n# Instalar dependencias de Composer`nRUN composer install --no-interaction --optimize-autoloader --no-dev`n`n# Permisos para Laravel`nRUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache`n`n# Exponer puerto`nEXPOSE 8000`n`n# Comando para iniciar la aplicacion`nCMD php artisan serve --host=0.0.0.0 --port=8000
+FROM php:8.2-apache
+
+RUN apt-get update && apt-get install -y git curl libpng-dev libonig-dev libxml2-dev libpq-dev zip unzip
+
+RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd
+
+RUN a2enmod rewrite
+
+RUN sed -ri -e \"s!/var/www/html!/var/www/html/public!g\" /etc/apache2/sites-available/*.conf
+RUN sed -ri -e \"s!/var/www/!/var/www/html/public!g\" /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+COPY . .
+
+RUN composer install --no-interaction --optimize-autoloader --no-dev
+
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+EXPOSE 80
