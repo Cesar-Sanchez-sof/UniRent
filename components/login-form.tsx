@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { API_URL } from "../lib/api-config"
 import { Eye, EyeOff, Mail, Lock, Loader2, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,7 +34,7 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/login", {
+      const response = await fetch(`${API_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

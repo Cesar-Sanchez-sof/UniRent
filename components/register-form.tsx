@@ -1,5 +1,6 @@
 "use client"
 
+import { API_URL } from "../lib/api-config"
 import { useState, useEffect, useCallback } from "react"
 import {
   Eye,
@@ -54,8 +55,7 @@ export function RegisterForm() {
     let mounted = true;
     const fetchUniversidades = async () => {
       try {
-        // Usamos 127.0.0.1 para evitar problemas de resolución de nombres en Windows
-        const response = await fetch("http://127.0.0.1:8000/api/universidades", {
+        const response = await fetch(`${API_URL}/universidades`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -121,7 +121,7 @@ export function RegisterForm() {
 
     setIsLoading(true);
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/register", {
+      const response = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
