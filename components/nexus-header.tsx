@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { API_URL } from "../lib/api-config"
+import { API_URL } from "../lib/api"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 
