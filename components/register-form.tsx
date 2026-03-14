@@ -1,6 +1,6 @@
 "use client"
 
-import { API_URL } from "@/lib/api-config"
+import { API_URL } from "../lib/api-config"
 import { useState, useEffect, useCallback } from "react"
 import {
   Eye,
