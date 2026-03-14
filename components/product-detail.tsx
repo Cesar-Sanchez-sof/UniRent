@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { formatPrice } from "@/lib/format"
+import { API_URL } from "@/lib/api-config"
 import { DateRange } from "react-day-picker"
 import { differenceInDays, format, parseISO, startOfDay } from "date-fns"
 import { es } from "date-fns/locale"
@@ -48,9 +49,9 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
       setError(null)
       try {
         const [productRes, bookedRes, resenasRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/publicaciones/${productId}`, { headers: { "Accept": "application/json" } }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/publicaciones/${productId}/booked-dates`, { headers: { "Accept": "application/json" } }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/publicaciones/${productId}/resenas`, { headers: { "Accept": "application/json" } })
+          fetch(`${API_URL}/publicaciones/${productId}`, { headers: { "Accept": "application/json" } }),
+          fetch(`${API_URL}/publicaciones/${productId}/booked-dates`, { headers: { "Accept": "application/json" } }),
+          fetch(`${API_URL}/publicaciones/${productId}/resenas`, { headers: { "Accept": "application/json" } })
         ])
         
         if (!productRes.ok) throw new Error("No se pudo cargar el producto")
@@ -104,7 +105,7 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
       const fechaInicio = format(dateRange.from, 'yyyy-MM-dd')
       const fechaFin = dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : fechaInicio
 
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/alquileres", {
+      const response = await fetch(`${API_URL}/alquileres`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

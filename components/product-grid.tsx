@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { ProductCard } from "@/components/product-card"
 import { Loader2, Package } from "lucide-react"
+import { API_URL } from "@/lib/api-config"
 
 interface ProductGridProps {
   onProductClick: (productId: number) => void
@@ -29,7 +30,7 @@ export function ProductGrid({ onProductClick, selectedCategoryId, searchTerm }: 
       const token = localStorage.getItem('auth_token')
       
       try {
-        let url = `${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/publicaciones?`
+        let url = `${API_URL}/publicaciones?`
         if (selectedCategoryId) url += `id_categoria=${selectedCategoryId}&`
         if (debouncedSearch) url += `search=${encodeURIComponent(debouncedSearch)}`
 

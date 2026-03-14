@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { API_URL } from "@/lib/api-config"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 
@@ -28,7 +29,7 @@ export function NexusHeader() {
     const token = localStorage.getItem('auth_token')
     if (!token) return
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/notifications", {
+      const response = await fetch(`${API_URL}/notifications`, {
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
       })
       if (response.ok) {
@@ -65,7 +66,7 @@ export function NexusHeader() {
   const markAsRead = async (id: number) => {
     const token = localStorage.getItem('auth_token')
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/notifications/${id}/read`, {
+      await fetch(`${API_URL}/notifications/${id}/read`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
       })
@@ -77,7 +78,7 @@ export function NexusHeader() {
   const markAllAsRead = async () => {
     const token = localStorage.getItem('auth_token')
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/notifications/read-all`, {
+      await fetch(`${API_URL}/notifications/read-all`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
       })
