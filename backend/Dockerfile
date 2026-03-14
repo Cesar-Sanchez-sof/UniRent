@@ -31,7 +31,7 @@ WORKDIR /var/www/html
 # Copiar el código del backend
 COPY . .
 
-# Asegurar formato de fin de línea Linux para el script y hacerlo ejecutable
+# Convertir el script a formato Linux y hacerlo ejecutable
 RUN dos2unix entrypoint.sh && chmod +x entrypoint.sh
 
 # Instalar dependencias de Composer
@@ -41,7 +41,7 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# El puerto 80 es una sugerencia, Render usará $PORT en el script
+# Render usa PORT por defecto (10000), pero exponemos el puerto 80 por si acaso
 EXPOSE 80
 
 # Usar el script de entrada corregido
