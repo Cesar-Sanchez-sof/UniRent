@@ -33,7 +33,15 @@ COPY . .
 # Instalar dependencias de Composer
 RUN composer install --no-interaction --optimize-autoloader --no-dev
 
-# Permisos para las carpetas de almacenamiento
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# Permisos para las carpetas de almacenamiento (se repiten en entrypoint para seguridad)
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Dar permisos al script de entrada
+RUN chmod +x entrypoint.sh
+
+# El puerto 80 es una sugerencia, Render usará $PORT en el script
 EXPOSE 80
+
+# Usar el script de entrada corregido
+ENTRYPOINT ["/var/www/html/entrypoint.sh"]
