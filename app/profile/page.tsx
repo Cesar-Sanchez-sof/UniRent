@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
-import { API_URL } from "../../lib/api-config"
+import { API_URL } from "../../lib/api"
 import { format, differenceInDays } from "date-fns"
 import { es } from "date-fns/locale"
 import {
