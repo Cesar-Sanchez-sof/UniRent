@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { ProductCard } from "@/components/product-card"
 import { Loader2, Package } from "lucide-react"
-import { API_URL } from "../lib/api-config"
+import { API_URL } from "@/lib/api-config"
 
 interface ProductGridProps {
   onProductClick: (productId: number) => void

@@ -1,16 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // En Next.js 16+, algunas opciones de eslint se manejan vía CLI o archivos aparte
   typescript: {
-    // Ignorar errores de tipos para que el build no se detenga
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    // Ignorar errores de linting durante el build
-    ignoreDuringBuilds: true,
   },
   images: {
     unoptimized: true,
   },
+  // Forzamos el uso de la configuración de alias del tsconfig
+  transpilePackages: ["@/lib"],
 }
 
 export default nextConfig
