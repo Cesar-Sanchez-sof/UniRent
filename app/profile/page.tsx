@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import { API_URL } from "@/lib/api-config"
 import { format, differenceInDays } from "date-fns"
 import { es } from "date-fns/locale"
 import {
@@ -103,7 +104,7 @@ function ProfileContent() {
       const token = localStorage.getItem('auth_token')
       if (!token) { window.location.href = "/login"; return; }
       try {
-        const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/user", {
+        const response = await fetch(`${API_URL}/user`, {
           headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
         })
         if (response.ok) {
@@ -139,7 +140,7 @@ function ProfileContent() {
     if (!token) return
     setIsPubsLoading(true)
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/user/publicaciones", {
+      const response = await fetch(`${API_URL}/user/publicaciones`, {
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
       })
       if (response.ok) setMyPublications(await response.json())
@@ -151,7 +152,7 @@ function ProfileContent() {
     if (!token) return
     setIsRentalsLoading(true)
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/user/alquileres", {
+      const response = await fetch(`${API_URL}/user/alquileres`, {
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
       })
       if (response.ok) setMyRentals(await response.json())
@@ -163,7 +164,7 @@ function ProfileContent() {
     if (!token) return
     setIsIncomingLoading(true)
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/user/solicitudes", {
+      const response = await fetch(`${API_URL}/user/solicitudes`, {
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
       })
       if (response.ok) setIncomingRentals(await response.json())
@@ -173,7 +174,7 @@ function ProfileContent() {
   const handleUpdateStatus = async (id: number, newStatus: string) => {
     const token = localStorage.getItem('auth_token')
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/alquileres/${id}/status`, {
+      const response = await fetch(`${API_URL}/alquileres/${id}/status`, {
         method: "PATCH",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json", "Content-Type": "application/json" },
         body: JSON.stringify({ estado: newStatus })
@@ -196,7 +197,7 @@ function ProfileContent() {
     e.preventDefault()
     setIsSubmittingReview(true)
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/resenas", {
+      const response = await fetch(`${API_URL}/resenas`, {
         method: "POST",
         headers: { 
           "Authorization": `Bearer ${localStorage.getItem('auth_token')}`, 
@@ -227,7 +228,7 @@ function ProfileContent() {
   const handleUpdatePublication = async (e: React.FormEvent) => {
     e.preventDefault(); setIsUpdatingPub(true)
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/publicaciones/${editingPub.id_publicacion}`, {
+      const response = await fetch(`${API_URL}/publicaciones/${editingPub.id_publicacion}`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${localStorage.getItem('auth_token')}`, "Accept": "application/json", "Content-Type": "application/json" },
         body: JSON.stringify(editingPub)
@@ -239,7 +240,7 @@ function ProfileContent() {
   const handleDeletePublication = async (id: number) => {
     if (!confirm("¿Eliminar publicación?")) return
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/publicaciones/${id}`, {
+      const response = await fetch(`${API_URL}/publicaciones/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${localStorage.getItem('auth_token')}` }
       })
@@ -268,7 +269,7 @@ function ProfileContent() {
     const formDataPhoto = new FormData()
     formDataPhoto.append('foto', tempFile)
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/user/upload-photo", {
+      const response = await fetch(`${API_URL}/user/upload-photo`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${localStorage.getItem('auth_token')}`, "Accept": "application/json" },
         body: formDataPhoto
@@ -284,7 +285,7 @@ function ProfileContent() {
   const handleUpdateInfo = async (e: React.FormEvent) => {
     e.preventDefault(); setIsSaving(true)
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/user/update", {
+      const response = await fetch(`${API_URL}/user/update`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem('auth_token')}`, "Accept": "application/json" },
         body: JSON.stringify(formData)
@@ -300,7 +301,7 @@ function ProfileContent() {
     }
     setIsChangingPass(true)
     try {
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}/user/change-password", {
+      const response = await fetch(`${API_URL}/user/change-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem('auth_token')}`, "Accept": "application/json" },
         body: JSON.stringify(passData)
