@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -143,8 +144,8 @@ class AuthController extends Controller
             // Queremos que se guarde en: backend/public/storage/perfiles/nombre.jpg
             $filename = 'avatar_' . $user->id_usuario . '_' . time() . '.' . $file->getClientOriginalExtension();
 
-            // storeAs guarda en storage/app/public/perfiles, que luego se vincula a public/storage
-            $path = $file->storeAs('perfiles', $filename, 'public');
+            // storeAs ahora usa el disco por defecto (S3 en producción, local en desarrollo)
+            $path = $file->storeAs('perfiles', $filename, config('filesystems.default'));
 
             // 5. UPDATE directo a la base de datos con la RUTA (string)
             // Se guardará algo como: "perfiles/avatar_1_123456.jpg"
@@ -153,8 +154,8 @@ class AuthController extends Controller
                 ->update(['foto_perfil' => $path]);
 
             return response()->json([
-                'message' => 'Ruta actualizada en la base de datos.',
-                'foto_url' => asset('storage/' . $path),
+                'message' => 'Foto actualizada correctamente.',
+                'foto_url' => Storage::url($path),
                 'foto_path' => $path
             ], 200);
 
@@ -233,8 +234,8 @@ class AuthController extends Controller
             if ($request->hasFile('foto')) {
                 $file = $request->file('foto');
                 $filename = time() . '_' . $user->username . '.' . $file->getClientOriginalExtension();
-                // Guardamos en storage/app/public/perfiles
-                $path = $file->storeAs('perfiles', $filename, 'public');
+                // Guardamos usando el disco por defecto
+                $path = $file->storeAs('perfiles', $filename, config('filesystems.default'));
                 $user->foto_perfil = $path;
             }
 
@@ -251,7 +252,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Perfil actualizado correctamente',
                 'user' => $user->load('universidad'),
-                'foto_url' => $user->foto_perfil ? asset('storage/' . $user->foto_perfil) : null
+                'foto_url' => $user->foto_perfil ? Storage::url($user->foto_perfil) : null
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al actualizar', 'error' => $e->getMessage()], 500);
