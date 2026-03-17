@@ -23,6 +23,12 @@ class Imagen extends Model
         $value = $this->attributes['url_photo'] ?? null;
         if (!$value) return null;
         if (str_starts_with($value, 'http')) return $value;
+        
+        $baseUrl = config('filesystems.disks.s3.url');
+        if ($baseUrl) {
+            return rtrim($baseUrl, '/') . '/' . ltrim($value, '/');
+        }
+
         return \Illuminate\Support\Facades\Storage::disk('s3')->url($value);
     }
 

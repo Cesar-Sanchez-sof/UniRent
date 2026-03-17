@@ -147,15 +147,13 @@ class AuthController extends Controller
             // storeAs ahora usa el disco por defecto (S3 en producción, local en desarrollo)
             $path = $file->storeAs('perfiles', $filename, 's3');
 
-            // 5. UPDATE directo a la base de datos con la RUTA (string)
-            // Se guardará algo como: "perfiles/avatar_1_123456.jpg"
-            DB::table('usuario')
-                ->where('id_usuario', $user->id_usuario)
-                ->update(['foto_perfil' => $path]);
+            // 5. UPDATE usando Eloquent para que el objeto $user se actualice
+            $user->foto_perfil = $path;
+            $user->save();
 
             return response()->json([
                 'message' => 'Foto actualizada correctamente.',
-                'foto_url' => $user->foto_perfil,
+                'foto_url' => $user->foto_perfil, // El accessor ya entregará la URL completa
                 'foto_path' => $path
             ], 200);
 
