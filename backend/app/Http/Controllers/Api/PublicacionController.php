@@ -127,7 +127,7 @@ class PublicacionController extends Controller
             if ($request->hasFile('imagenes')) {
                 foreach ($request->file('imagenes') as $index => $file) {
                     $filename = 'pub_' . $publicacion->id_publicacion . '_' . time() . '_' . $index . '.' . $file->getClientOriginalExtension();
-                    $path = $file->storeAs('publicaciones', $filename, 'public');
+                    $path = $file->storeAs('publicaciones', $filename, 's3');
                     Imagen::create(['url_photo' => $path, 'id_publicacion' => $publicacion->id_publicacion]);
                 }
             }

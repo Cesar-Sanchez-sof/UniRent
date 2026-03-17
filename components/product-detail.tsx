@@ -165,7 +165,7 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
   const subtotal = pricePerDay * totalDays
   const total = subtotal + deposit
 
-  const images = product.imagenes?.length > 0 ? product.imagenes.map((img: any) => `http://localhost:8000/storage/${img.url_photo}`) : ["/placeholder.jpg"]
+  const images = product.imagenes?.length > 0 ? product.imagenes.map((img: any) => img.url_photo) : ["/placeholder.jpg"]
 
   return (
     <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center" role="dialog" aria-modal="true">
@@ -194,7 +194,7 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
                   <span className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Dueño</span>
                   <div className="flex items-center gap-2">
                     <div className="relative h-9 w-9 rounded-full overflow-hidden bg-primary/20 flex items-center justify-center text-primary font-bold text-xs border border-primary/30">
-                      {product.usuario?.foto_perfil ? <Image src={`http://localhost:8000/storage/${product.usuario.foto_perfil}`} alt={product.usuario.primer_nombre} fill className="object-cover" /> : product.usuario?.primer_nombre?.[0] || "U"}
+                      {product.usuario?.foto_perfil ? <Image src={product.usuario.foto_perfil} alt={product.usuario.primer_nombre} fill className="object-cover" /> : product.usuario?.primer_nombre?.[0] || "U"}
                     </div>
                     <div><p className="text-sm font-bold leading-none">{product.usuario?.primer_nombre} {product.usuario?.primer_apellido}</p><p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{product.usuario?.universidad?.nombre_corto || "Estudiante"}</p></div>
                   </div>
@@ -224,7 +224,7 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
                           <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary overflow-hidden border border-primary/20">
                               {resena.alquiler?.usuario?.foto_perfil ? (
-                                <img src={`http://localhost:8000/storage/${resena.alquiler.usuario.foto_perfil}`} alt="User" className="w-full h-full object-cover" />
+                                <img src={resena.alquiler.usuario.foto_perfil} alt="User" className="w-full h-full object-cover" />
                               ) : (
                                 <span>{resena.alquiler?.usuario?.primer_nombre?.[0] || "U"}</span>
                               )}

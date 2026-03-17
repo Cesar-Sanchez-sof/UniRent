@@ -86,7 +86,7 @@ export function ProductGrid({ onProductClick, selectedCategoryId, searchTerm }: 
             key={product.id_publicacion}
             title={product.titulo}
             images={product.imagenes?.length > 0 
-              ? product.imagenes.map((img: any) => `http://localhost:8000/storage/${img.url_photo}`)
+              ? product.imagenes.map((img: any) => img.url_photo)
               : ["/placeholder.jpg"]
             }
             distance={product.distrito?.nombre || "Ubicación"}
