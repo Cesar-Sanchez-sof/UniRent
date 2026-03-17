@@ -96,7 +96,7 @@ class AuthController extends Controller
                 'id' => $user->id_usuario,
                 'nombre' => $user->primer_nombre . ' ' . $user->primer_apellido,
                 'username' => $user->username,
-                'foto' => $user->foto_perfil ? Storage::disk('s3')->url($user->foto_perfil) : null
+                'foto' => $user->foto_perfil,
             ]
         ]);
     }
@@ -155,7 +155,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Foto actualizada correctamente.',
-                'foto_url' => Storage::disk('s3')->url($path),
+                'foto_url' => $user->foto_perfil,
                 'foto_path' => $path
             ], 200);
 
@@ -252,7 +252,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Perfil actualizado correctamente',
                 'user' => $user->load('universidad'),
-                'foto_url' => $user->foto_perfil ? Storage::disk('s3')->url($user->foto_perfil) : null
+                'foto_url' => $user->foto_perfil,
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al actualizar', 'error' => $e->getMessage()], 500);
