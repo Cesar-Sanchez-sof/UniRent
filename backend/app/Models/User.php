@@ -11,9 +11,11 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'usuario'; // Sin prefijo public para evitar errores de esquema
+    protected $table = 'usuario';
     protected $primaryKey = 'id_usuario';
-    public $timestamps = false; // El SQL no tiene created_at/updated_at
+    public $timestamps = false;
+
+    protected $appends = ['foto_perfil'];
 
     protected $fillable = [
         'primer_nombre',
@@ -40,6 +42,13 @@ class User extends Authenticatable
         $value = $this->attributes['foto_perfil'] ?? null;
         if (!$value) return null;
         if (str_starts_with($value, 'http')) return $value;
+        
+        // Priorizar AWS_URL del .env si existe para construir la URL pública
+        $baseUrl = config('filesystems.disks.s3.url');
+        if ($baseUrl) {
+            return rtrim($baseUrl, '/') . '/' . ltrim($value, '/');
+        }
+
         return \Illuminate\Support\Facades\Storage::disk('s3')->url($value);
     }
 

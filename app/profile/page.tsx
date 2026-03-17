@@ -119,7 +119,15 @@ function ProfileContent() {
             correo: data.correo || "",
             telefono: data.telefono || ""
           })
-          if (data.foto_perfil) setPreviewUrl(data.foto_perfil)
+          if (data.foto_perfil) {
+            setPreviewUrl(data.foto_perfil)
+            // Actualizamos localStorage si ha cambiado
+            const currentStoredUser = JSON.parse(localStorage.getItem('user') || '{}')
+            if (currentStoredUser.foto !== data.foto_perfil) {
+              currentStoredUser.foto = data.foto_perfil
+              localStorage.setItem('user', JSON.stringify(currentStoredUser))
+            }
+          }
         }
       } catch (e) { console.error(e) } finally { setIsLoading(false) }
     }
