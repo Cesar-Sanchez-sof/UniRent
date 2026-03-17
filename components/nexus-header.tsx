@@ -186,10 +186,9 @@ export function NexusHeader() {
                       <div className="h-full w-full bg-primary/10 flex items-center justify-center">
                         {userData?.foto_url_full || userData?.foto ? (
                           <img 
-                            src={userData?.foto_url_full || `http://localhost:8000/storage/${userData.foto}`} 
+                            src={userData?.foto_url_full || userData?.foto} 
                             alt="Avatar" 
-                            className="w-full h-full object-cover"
-                          />
+                            className="w-full h-full object-cover"                          />
                         ) : (
                           <User className="h-5 w-5 text-primary" />
                         )}
@@ -265,10 +264,9 @@ export function NexusHeader() {
                   <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white text-lg font-bold overflow-hidden border border-white shadow-sm">
                     {userData?.foto_url_full || userData?.foto ? (
                       <img 
-                        src={userData?.foto_url_full || `http://localhost:8000/storage/${userData.foto}`} 
+                        src={userData?.foto_url_full || userData?.foto} 
                         alt="Avatar" 
-                        className="w-full h-full object-cover"
-                      />
+                        className="w-full h-full object-cover"                      />
                     ) : (
                       userData?.primer_nombre?.[0]
                     )}

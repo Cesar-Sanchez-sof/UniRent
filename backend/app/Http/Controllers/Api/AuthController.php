@@ -96,7 +96,7 @@ class AuthController extends Controller
                 'id' => $user->id_usuario,
                 'nombre' => $user->primer_nombre . ' ' . $user->primer_apellido,
                 'username' => $user->username,
-                'foto' => $user->foto_perfil
+                'foto' => $user->foto_perfil ? Storage::disk('s3')->url($user->foto_perfil) : null
             ]
         ]);
     }
@@ -145,7 +145,7 @@ class AuthController extends Controller
             $filename = 'avatar_' . $user->id_usuario . '_' . time() . '.' . $file->getClientOriginalExtension();
 
             // storeAs ahora usa el disco por defecto (S3 en producción, local en desarrollo)
-            $path = $file->storeAs('perfiles', $filename, config('filesystems.default'));
+            $path = $file->storeAs('perfiles', $filename, 's3');
 
             // 5. UPDATE directo a la base de datos con la RUTA (string)
             // Se guardará algo como: "perfiles/avatar_1_123456.jpg"
@@ -155,7 +155,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'message' => 'Foto actualizada correctamente.',
-                'foto_url' => Storage::url($path),
+                'foto_url' => Storage::disk('s3')->url($path),
                 'foto_path' => $path
             ], 200);
 
@@ -235,7 +235,7 @@ class AuthController extends Controller
                 $file = $request->file('foto');
                 $filename = time() . '_' . $user->username . '.' . $file->getClientOriginalExtension();
                 // Guardamos usando el disco por defecto
-                $path = $file->storeAs('perfiles', $filename, config('filesystems.default'));
+                $path = $file->storeAs('perfiles', $filename, 's3');
                 $user->foto_perfil = $path;
             }
 
@@ -252,7 +252,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Perfil actualizado correctamente',
                 'user' => $user->load('universidad'),
-                'foto_url' => $user->foto_perfil ? Storage::url($user->foto_perfil) : null
+                'foto_url' => $user->foto_perfil ? Storage::disk('s3')->url($user->foto_perfil) : null
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error al actualizar', 'error' => $e->getMessage()], 500);

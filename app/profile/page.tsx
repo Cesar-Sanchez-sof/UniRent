@@ -119,7 +119,7 @@ function ProfileContent() {
             correo: data.correo || "",
             telefono: data.telefono || ""
           })
-          if (data.foto_perfil) setPreviewUrl(`http://localhost:8000/storage/${data.foto_perfil}`)
+          if (data.foto_perfil) setPreviewUrl(data.foto_perfil)
         }
       } catch (e) { console.error(e) } finally { setIsLoading(false) }
     }
@@ -258,7 +258,7 @@ function ProfileContent() {
 
   const handleCancelPhoto = () => {
     setShowPhotoModal(false); setTempFile(null)
-    if (user?.foto_perfil) setPreviewUrl(`http://localhost:8000/storage/${user.foto_perfil}`)
+    if (user?.foto_perfil) setPreviewUrl(user.foto_perfil)
     else setPreviewUrl(null)
     if (fileInputRef.current) fileInputRef.current.value = ""
   }
@@ -276,8 +276,11 @@ function ProfileContent() {
       })
       if (response.ok) {
         const data = await response.json()
-        setUser((prev: any) => ({ ...prev, foto_perfil: data.foto_path }))
+        setUser((prev: any) => ({ ...prev, foto_perfil: data.foto_url }))
+        setPreviewUrl(data.foto_url)
         setShowPhotoModal(false); toast({ title: "Foto actualizada" })
+        // Dispatch event for other components
+        window.dispatchEvent(new CustomEvent('user-photo-updated', { detail: data.foto_url }))
       }
     } finally { setIsUploadingPhoto(false) }
   }
@@ -368,7 +371,7 @@ function ProfileContent() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {myPublications.map(pub => (
                       <div key={pub.id_publicacion} className="relative group">
-                        <ProductCard title={pub.titulo} images={pub.imagenes?.length > 0 ? pub.imagenes.map((img: any) => `http://localhost:8000/storage/${img.url_photo}`) : ["/placeholder.jpg"]} distance={pub.distrito?.nombre || "Lima"} pricePerDay={Number(pub.precio_dia)} trustScore={Number(pub.usuario?.puntaje_dueno) || 5.0} verified={pub.estado} onClick={() => {}} onEdit={() => handleEditClick(pub)} />
+                        <ProductCard title={pub.titulo} images={pub.imagenes?.length > 0 ? pub.imagenes.map((img: any) => img.url_photo) : ["/placeholder.jpg"]} distance={pub.distrito?.nombre || "Lima"} pricePerDay={Number(pub.precio_dia)} trustScore={Number(pub.usuario?.puntaje_dueno) || 5.0} verified={pub.estado} onClick={() => {}} onEdit={() => handleEditClick(pub)} />
                         <div className="absolute top-3 right-14 z-30 opacity-0 group-hover:opacity-100 transition-all transform translate-y-[-5px] group-hover:translate-y-0"><button onClick={(e) => { e.stopPropagation(); handleDeletePublication(pub.id_publicacion); }} className="bg-white/90 backdrop-blur-md text-destructive p-2 rounded-xl shadow-lg hover:bg-destructive hover:text-white transition-all"><Trash2 className="h-4 w-4" /></button></div>
                       </div>
                     ))}
@@ -385,7 +388,7 @@ function ProfileContent() {
                     {myRentals.map(rental => (
                       <div key={rental.id_alquiler} className="bg-card rounded-2xl border border-border p-4 flex gap-6 items-center shadow-sm bg-white">
                         <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-muted shrink-0 shadow-inner">
-                          <img src={rental.publicacion?.imagenes?.[0] ? `http://localhost:8000/storage/${rental.publicacion.imagenes[0].url_photo}` : "/placeholder.jpg"} className="object-cover w-full h-full" />
+                          <img src={rental.publicacion?.imagenes?.[0] ? rental.publicacion.imagenes[0].url_photo : "/placeholder.jpg"} className="object-cover w-full h-full" />
                         </div>
                         <div className="flex-1">
                           <div className="flex justify-between items-start">
@@ -448,7 +451,7 @@ function ProfileContent() {
                     {incomingRentals.map(req => (
                       <div key={req.id_alquiler} className="bg-card rounded-2xl border border-border p-5 flex gap-6 shadow-sm bg-white">
                         <div className="relative h-24 w-24 rounded-2xl overflow-hidden bg-muted shrink-0 shadow-inner">
-                          <img src={req.publicacion?.imagenes?.[0] ? `http://localhost:8000/storage/${req.publicacion.imagenes[0].url_photo}` : "/placeholder.jpg"} className="object-cover w-full h-full" />
+                          <img src={req.publicacion?.imagenes?.[0] ? req.publicacion.imagenes[0].url_photo : "/placeholder.jpg"} className="object-cover w-full h-full" />
                         </div>
                         <div className="flex-1 flex flex-col justify-between">
                           <div className="flex justify-between items-start">
@@ -456,7 +459,7 @@ function ProfileContent() {
                               <h4 className="font-bold text-lg leading-tight">{req.publicacion?.titulo}</h4>
                               <div className="flex items-center gap-2 mt-1.5">
                                 <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
-                                  {req.usuario?.foto_perfil ? <img src={`http://localhost:8000/storage/${req.usuario.foto_perfil}`} className="object-cover" /> : <span className="text-[10px] font-bold text-primary">{req.usuario?.primer_nombre?.[0]}</span>}
+                                  {req.usuario?.foto_perfil ? <img src={req.usuario.foto_perfil} className="object-cover" /> : <span className="text-[10px] font-bold text-primary">{req.usuario?.primer_nombre?.[0]}</span>}
                                 </div>
                                 <span className="text-sm font-medium text-muted-foreground">Cliente: {req.usuario?.primer_nombre} {req.usuario?.primer_apellido}</span>
                               </div>

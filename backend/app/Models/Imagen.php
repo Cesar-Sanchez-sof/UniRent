@@ -18,6 +18,14 @@ class Imagen extends Model
         'id_publicacion',
     ];
 
+    public function getUrlPhotoAttribute()
+    {
+        $value = $this->attributes['url_photo'] ?? null;
+        if (!$value) return null;
+        if (str_starts_with($value, 'http')) return $value;
+        return \Illuminate\Support\Facades\Storage::disk('s3')->url($value);
+    }
+
     public function publicacion()
     {
         return $this->belongsTo(Publicacion::class, 'id_publicacion', 'id_publicacion');
