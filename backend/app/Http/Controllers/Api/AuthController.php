@@ -96,7 +96,7 @@ class AuthController extends Controller
                 'id' => $user->id_usuario,
                 'nombre' => $user->primer_nombre . ' ' . $user->primer_apellido,
                 'username' => $user->username,
-                'foto' => $user->foto_perfil,
+                'foto_perfil' => $user->foto_perfil,
             ]
         ]);
     }
