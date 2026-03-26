@@ -37,18 +37,12 @@ class User extends Authenticatable
         'foto_perfil',
     ];
 
-    public function getFotoPerfilAttribute()
+    public function getFotoPerfilAttribute($value)
     {
-        $value = $this->attributes['foto_perfil'] ?? null;
         if (!$value) return null;
-        if (str_starts_with($value, 'http')) return $value;
+        if (filter_var($value, FILTER_VALIDATE_URL)) return $value;
         
-        // Priorizar AWS_URL del .env si existe para construir la URL pública
-        $baseUrl = config('filesystems.disks.s3.url');
-        if ($baseUrl) {
-            return rtrim($baseUrl, '/') . '/' . ltrim($value, '/');
-        }
-
+        // Si el valor es una ruta relativa, usamos el disco s3 para generar la URL
         return \Illuminate\Support\Facades\Storage::disk('s3')->url($value);
     }
 
