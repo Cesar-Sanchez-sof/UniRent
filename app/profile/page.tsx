@@ -100,6 +100,34 @@ function ProfileContent() {
 
   // Cargar usuario
   useEffect(() => {
+    // 1. Hidratación inicial desde LocalStorage para carga instantánea
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser)
+        setUser(parsedUser)
+        // Usamos foto_perfil que es el campo estándar de nuestro backend
+        if (parsedUser.foto_perfil) setPreviewUrl(parsedUser.foto_perfil)
+        else if (parsedUser.foto) setPreviewUrl(parsedUser.foto)
+        
+        setFormData({
+          primer_nombre: parsedUser.primer_nombre || "",
+          segundo_nombre: parsedUser.segundo_nombre || "",
+          primer_apellido: parsedUser.primer_apellido || "",
+          segundo_apellido: parsedUser.segundo_apellido || "",
+          username: parsedUser.username || "",
+          correo: parsedUser.correo || "",
+          telefono: parsedUser.telefono || ""
+        })
+        
+        // Si ya tenemos datos locales, podemos quitar el loader principal
+        // y dejar que la API actualice en segundo plano
+        setIsLoading(false)
+      } catch (e) {
+        console.error("Error parsing stored user:", e)
+      }
+    }
+
     const fetchUser = async () => {
       const token = localStorage.getItem('auth_token')
       if (!token) { window.location.href = "/login"; return; }
@@ -121,15 +149,15 @@ function ProfileContent() {
           })
           if (data.foto_perfil) {
             setPreviewUrl(data.foto_perfil)
-            // Actualizamos localStorage si ha cambiado
-            const currentStoredUser = JSON.parse(localStorage.getItem('user') || '{}')
-            if (currentStoredUser.foto !== data.foto_perfil) {
-              currentStoredUser.foto = data.foto_perfil
-              localStorage.setItem('user', JSON.stringify(currentStoredUser))
-            }
           }
+          // Actualizamos localStorage con los datos más frescos
+          localStorage.setItem('user', JSON.stringify(data))
         }
-      } catch (e) { console.error(e) } finally { setIsLoading(false) }
+      } catch (e) { 
+        console.error(e) 
+      } finally { 
+        setIsLoading(false) 
+      }
     }
     fetchUser()
   }, [])
