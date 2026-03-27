@@ -15,7 +15,7 @@ class User extends Authenticatable
     protected $primaryKey = 'id_usuario';
     public $timestamps = false;
 
-    protected $appends = ['foto_perfil'];
+    protected $appends = [];
 
     protected $fillable = [
         'primer_nombre',
@@ -37,13 +37,20 @@ class User extends Authenticatable
         'foto_perfil',
     ];
 
-    public function getFotoPerfilAttribute($value)
+    /**
+     * Accessor para la foto de perfil.
+     * Se asegura de devolver siempre una URL completa si el valor no es nulo.
+     */
+    protected function fotoPerfil(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        if (!$value) return null;
-        if (filter_var($value, FILTER_VALIDATE_URL)) return $value;
-        
-        // Si el valor es una ruta relativa, usamos el disco s3 para generar la URL
-        return \Illuminate\Support\Facades\Storage::disk('s3')->url($value);
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: function ($value) {
+                if (!$value) return null;
+                if (filter_var($value, FILTER_VALIDATE_URL)) return $value;
+                
+                return \Illuminate\Support\Facades\Storage::disk('s3')->url($value);
+            },
+        );
     }
 
     protected $hidden = [
