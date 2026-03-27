@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { MultiImageUpload } from "@/components/multi-image-upload"
+import { API_URL } from "@/lib/api"
 
 import {
   Popover,
@@ -94,13 +95,11 @@ export function PublishForm() {
   
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
-  const API_BASE_URL = "${process.env.NEXT_PUBLIC_API_URL || \"http://localhost:8000/api\"}";
-
   // Cargar Departamentos al iniciar
   useEffect(() => {
     const loadDepts = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/ubicaciones/departamentos`);
+        const res = await fetch(`${API_URL}/ubicaciones/departamentos`);
         if (res.ok) {
           const data = await res.json();
           setDepartamentos(data);
@@ -117,7 +116,7 @@ export function PublishForm() {
     if (!idDepartamento) return;
     const loadProvs = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/ubicaciones/provincias/${idDepartamento}`);
+        const res = await fetch(`${API_URL}/ubicaciones/provincias/${idDepartamento}`);
         if (res.ok) {
           const data = await res.json();
           setProvincias(data);
@@ -137,7 +136,7 @@ export function PublishForm() {
     if (!idProvincia) return;
     const loadDists = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/ubicaciones/distritos/${idProvincia}`);
+        const res = await fetch(`${API_URL}/ubicaciones/distritos/${idProvincia}`);
         if (res.ok) {
           const data = await res.json();
           setDistritos(data);
@@ -189,7 +188,7 @@ export function PublishForm() {
         formData.append(`imagenes[${index}]`, img.file)
       })
 
-      const response = await fetch(`${API_BASE_URL}/publicaciones`, {
+      const response = await fetch(`${API_URL}/publicaciones`, {
         method: "POST",
         headers: { 
           "Authorization": `Bearer ${token}`,
