@@ -56,7 +56,7 @@ export function NexusHeader() {
     }
 
     const handlePhotoUpdate = (event: any) => {
-      setUserData((prev: any) => ({ ...prev, foto_url_full: event.detail }))
+      setUserData((prev: any) => ({ ...prev, foto_perfil: event.detail }))
     }
 
     window.addEventListener('user-photo-updated', handlePhotoUpdate)
@@ -184,9 +184,9 @@ export function NexusHeader() {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0 overflow-hidden border border-border">
                       <div className="h-full w-full bg-primary/10 flex items-center justify-center">
-                        {userData?.foto_url_full || userData?.foto ? (
+                        {userData?.foto_perfil || userData?.foto_url_full || userData?.foto ? (
                           <img 
-                            src={userData?.foto_url_full || userData?.foto} 
+                            src={userData?.foto_perfil || userData?.foto_url_full || userData?.foto} 
                             alt="Avatar" 
                             className="w-full h-full object-cover"                          />
                         ) : (
@@ -262,9 +262,9 @@ export function NexusHeader() {
               <>
                 <div className="flex items-center gap-3 p-4 bg-primary/5 rounded-2xl border border-primary/10 mb-2">
                   <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white text-lg font-bold overflow-hidden border border-white shadow-sm">
-                    {userData?.foto_url_full || userData?.foto ? (
+                    {userData?.foto_perfil || userData?.foto_url_full || userData?.foto ? (
                       <img 
-                        src={userData?.foto_url_full || userData?.foto} 
+                        src={userData?.foto_perfil || userData?.foto_url_full || userData?.foto} 
                         alt="Avatar" 
                         className="w-full h-full object-cover"                      />
                     ) : (
