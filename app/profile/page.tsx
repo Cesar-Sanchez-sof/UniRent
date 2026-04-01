@@ -634,113 +634,186 @@ function ProfileContent() {
 
       {/* Modales */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="rounded-3xl max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black">Editar Publicación</DialogTitle>
-            <DialogDescription>Modifica los detalles de tu artículo en alquiler.</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="rounded-[2rem] max-w-3xl max-h-[92vh] overflow-y-auto p-0 border-none shadow-2xl">
+          <div className="sticky top-0 bg-white/80 backdrop-blur-md z-40 px-8 py-6 border-b border-border/50 flex justify-between items-center">
+            <div>
+              <DialogTitle className="text-2xl font-black text-foreground flex items-center gap-2">
+                <Edit2 className="h-6 w-6 text-primary" /> Editar Publicación
+              </DialogTitle>
+              <DialogDescription className="text-muted-foreground font-medium">Actualiza los detalles de tu artículo</DialogDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setShowEditModal(false)} className="rounded-full hover:bg-secondary/80">
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
           
           {editingPub && (
-            <form onSubmit={handleUpdatePublication} className="space-y-6 py-4">
-              {/* Fotos */}
-              <div className="space-y-3">
-                <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Fotos del artículo</Label>
-                <div className="grid grid-cols-4 gap-2 mb-2">
-                  {editingPub.imagenes?.map((img: any, i: number) => (
-                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
-                      <img src={img.url_photo} className="object-cover w-full h-full" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <span className="text-[10px] text-white font-bold">Imagen Actual</span>
-                      </div>
-                    </div>
-                  ))}
+            <form onSubmit={handleUpdatePublication} className="p-8 space-y-8">
+              {/* Sección de Fotos */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-primary">
+                  <Camera className="h-4 w-4" />
+                  <Label className="text-xs uppercase tracking-[0.2em] font-black">Fotos del artículo</Label>
                 </div>
-                <MultiImageUpload 
-                  images={editingPub.new_images || []} 
-                  onChange={(imgs) => setEditingPub({...editingPub, new_images: imgs})} 
-                  maxImages={8 - (editingPub.imagenes?.length || 0)} 
-                />
-                <p className="text-[10px] text-muted-foreground">Puedes añadir hasta 8 fotos en total.</p>
+                <div className="bg-secondary/30 rounded-[1.5rem] p-4 border border-dashed border-border/50">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-4">
+                    {editingPub.imagenes?.map((img: any, i: number) => (
+                      <div key={i} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-white shadow-sm group">
+                        <img src={img.url_photo} className="object-cover w-full h-full transition-transform group-hover:scale-110" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-2">
+                          <span className="text-[9px] text-white font-black uppercase tracking-tighter">Actual</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <MultiImageUpload 
+                    images={editingPub.new_images || []} 
+                    onChange={(imgs) => setEditingPub({...editingPub, new_images: imgs})} 
+                    maxImages={8 - (editingPub.imagenes?.length || 0)} 
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-3 text-center font-medium italic">
+                    Puedes tener hasta 8 fotos en total para mostrar mejor tu producto.
+                  </p>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Título</Label>
-                    <Input value={editingPub.titulo} onChange={e => setEditingPub({...editingPub, titulo: e.target.value})} className="rounded-xl h-12" placeholder="Ej: Cámara Sony A7III"/>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Columna Izquierda: Información Principal */}
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-muted-foreground ml-1">Título del Anuncio</Label>
+                    <div className="relative group">
+                      <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Input 
+                        value={editingPub.titulo} 
+                        onChange={e => setEditingPub({...editingPub, titulo: e.target.value})} 
+                        className="rounded-2xl h-14 pl-11 bg-secondary/20 border-transparent focus:bg-white focus:border-primary/30 transition-all font-medium" 
+                        placeholder="Ej: Laptop Gamer Nitro 5"
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Estado del artículo</Label>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-muted-foreground ml-1">Estado del artículo</Label>
                     <Select value={editingPub.condicion} onValueChange={(v) => setEditingPub({...editingPub, condicion: v})}>
-                      <SelectTrigger className="h-12 rounded-xl">
-                        <SelectValue placeholder="Seleccionar estado" />
+                      <SelectTrigger className="h-14 rounded-2xl bg-secondary/20 border-transparent focus:bg-white focus:border-primary/30 transition-all font-medium">
+                        <SelectValue placeholder="¿En qué estado está?" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
+                      <SelectContent className="rounded-2xl border-none shadow-xl">
                         {conditions.map(c => (
-                          <SelectItem key={c.id} value={c.id} className="rounded-lg">{c.label}</SelectItem>
+                          <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 cursor-pointer">
+                            <div className="flex flex-col">
+                              <span className="font-bold">{c.label}</span>
+                              <span className="text-[10px] text-muted-foreground">{c.desc}</span>
+                            </div>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Visibilidad</Label>
-                    <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-secondary/10">
-                      <div className="flex items-center gap-2">
-                        {editingPub.estado ? <Eye className="h-4 w-4 text-primary" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
-                        <span className="text-sm font-medium">{editingPub.estado ? "Visible para todos" : "Oculto"}</span>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-muted-foreground ml-1">Visibilidad Pública</Label>
+                    <div className={cn(
+                      "flex items-center justify-between p-4 rounded-2xl border-2 transition-all",
+                      editingPub.estado ? "bg-green-50/50 border-green-100" : "bg-amber-50/50 border-amber-100"
+                    )}>
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "h-10 w-10 rounded-xl flex items-center justify-center shadow-sm",
+                          editingPub.estado ? "bg-green-500 text-white" : "bg-amber-500 text-white"
+                        )}>
+                          {editingPub.estado ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-black">{editingPub.estado ? "Visible" : "Oculto"}</p>
+                          <p className="text-[10px] text-muted-foreground font-medium">
+                            {editingPub.estado ? "Los usuarios pueden alquilarlo" : "Nadie podrá ver tu artículo"}
+                          </p>
+                        </div>
                       </div>
                       <Switch 
                         checked={editingPub.estado} 
                         onCheckedChange={(checked) => setEditingPub({...editingPub, estado: checked})} 
+                        className="data-[state=checked]:bg-green-500"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Precio por día (S/)</Label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">S/</span>
+                {/* Columna Derecha: Precios y Descripción */}
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-muted-foreground ml-1">Precio x Día</Label>
+                    <div className="relative group">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-primary">S/</span>
                       <Input 
                         type="number" 
                         value={editingPub.precio_dia} 
                         onChange={e => setEditingPub({...editingPub, precio_dia: e.target.value})} 
-                        className="rounded-xl h-12 pl-10"
+                        className="rounded-2xl h-14 pl-10 bg-secondary/20 border-transparent focus:bg-white focus:border-primary/30 transition-all font-black text-lg"
                       />
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-muted-foreground font-medium">Comisión Seguro (30%)</span>
-                      <span className="font-bold text-accent">S/ {(Number(editingPub.precio_dia) * 0.3).toFixed(2)}</span>
+                  <div className="p-6 rounded-[2rem] bg-gradient-to-br from-primary to-primary/80 text-white shadow-xl shadow-primary/20 space-y-4">
+                    <div className="flex justify-between items-center opacity-80">
+                      <div className="flex items-center gap-1.5">
+                        <BadgeCheck className="h-3.5 w-3.5" />
+                        <span className="text-[10px] uppercase font-black tracking-widest">Seguro NexUs (30%)</span>
+                      </div>
+                      <span className="font-bold text-sm">S/ {(Number(editingPub.precio_dia) * 0.3).toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-black">Tu Ganancia Neta</span>
-                      <span className="text-lg font-black text-primary">S/ {(Number(editingPub.precio_dia) * 0.7).toFixed(2)}</span>
+                    <div className="h-px bg-white/20 w-full" />
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <p className="text-[10px] uppercase font-black opacity-70 tracking-tighter">Tu ganancia neta</p>
+                        <p className="text-3xl font-black tracking-tighter">S/ {(Number(editingPub.precio_dia) * 0.7).toFixed(2)}</p>
+                      </div>
+                      <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                        <DollarSign className="h-6 w-6" />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Descripción</Label>
-                    <textarea 
-                      value={editingPub.descripcion} 
-                      onChange={e => setEditingPub({...editingPub, descripcion: e.target.value})} 
-                      className="w-full min-h-[100px] p-4 border rounded-2xl bg-card text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
-                    />
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-muted-foreground ml-1">Descripción del artículo</Label>
+                    <div className="relative group">
+                      <FileText className="absolute left-4 top-4 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <textarea 
+                        value={editingPub.descripcion} 
+                        onChange={e => setEditingPub({...editingPub, descripcion: e.target.value})} 
+                        className="w-full min-h-[140px] pl-11 pr-4 py-4 rounded-2xl bg-secondary/20 border-transparent focus:bg-white focus:border-primary/30 transition-all text-sm font-medium outline-none resize-none"
+                        placeholder="Describe detalladamente tu producto..."
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <DialogFooter className="pt-4">
-                <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)} className="rounded-xl">Cancelar</Button>
-                <Button type="submit" disabled={isUpdatingPub} className="rounded-xl h-12 px-8 bg-primary font-bold shadow-lg shadow-primary/20">
-                  {isUpdatingPub ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar Cambios"}
+              <div className="pt-6 border-t border-border/50 flex flex-col sm:flex-row gap-3">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={() => setShowEditModal(false)} 
+                  className="flex-1 h-14 rounded-2xl font-bold text-muted-foreground hover:bg-secondary/50"
+                >
+                  Cancelar
                 </Button>
-              </DialogFooter>
+                <Button 
+                  type="submit" 
+                  disabled={isUpdatingPub} 
+                  className="flex-[2] h-14 rounded-2xl bg-primary hover:bg-primary/90 font-black text-white shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
+                >
+                  {isUpdatingPub ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  ) : (
+                    <>
+                      <Check className="h-5 w-5 mr-2" /> Guardar Cambios
+                    </>
+                  )}
+                </Button>
+              </div>
             </form>
           )}
         </DialogContent>
