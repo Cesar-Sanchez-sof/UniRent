@@ -26,6 +26,22 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog"
+import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { MultiImageUpload } from "@/components/multi-image-upload"
+
+const conditions = [
+  { id: "new", label: "Nuevo", desc: "Sin usar o con empaque original" },
+  { id: "like-new", label: "Como nuevo", desc: "Usado pocas veces, excelente estado" },
+  { id: "good", label: "Buen estado", desc: "Uso normal, funciona perfectamente" },
+  { id: "fair", label: "Aceptable", desc: "Marcas de uso pero completamente funcional" },
+]
 
 type TabType = 'config' | 'publications' | 'rentals' | 'incoming';
 
@@ -258,18 +274,49 @@ function ProfileContent() {
   }
 
   const handleEditClick = (pub: any) => {
-    setEditingPub({...pub}); setShowEditModal(true)
+    setEditingPub({
+      ...pub,
+      new_images: [],
+      // Aseguramos que el estado sea booleano para el switch
+      estado: pub.estado === 1 || pub.estado === true || pub.estado === "1"
+    }); 
+    setShowEditModal(true)
   }
 
   const handleUpdatePublication = async (e: React.FormEvent) => {
     e.preventDefault(); setIsUpdatingPub(true)
+    const token = localStorage.getItem('auth_token')
     try {
-      const response = await fetch(`${API_URL}/publicaciones/${editingPub.id_publicacion}`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${localStorage.getItem('auth_token')}`, "Accept": "application/json", "Content-Type": "application/json" },
-        body: JSON.stringify(editingPub)
+      const formData = new FormData()
+      formData.append('titulo', editingPub.titulo)
+      formData.append('descripcion', editingPub.descripcion)
+      formData.append('precio_dia', editingPub.precio_dia)
+      formData.append('condicion', editingPub.condicion)
+      formData.append('estado', editingPub.estado ? "1" : "0")
+      
+      // Manejo de nuevas imágenes si las hay
+      if (editingPub.new_images && editingPub.new_images.length > 0) {
+        editingPub.new_images.forEach((img: any, index: number) => {
+          formData.append(`imagenes[${index}]`, img.file)
+        })
+      }
+
+      const response = await fetch(`${API_URL}/publicaciones/${editingPub.id_publicacion}?_method=PUT`, {
+        method: "POST", // Laravel prefiere POST con _method=PUT para FormData con archivos
+        headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" },
+        body: formData
       })
-      if (response.ok) { toast({ title: "Publicación actualizada" }); setShowEditModal(false); fetchMyPublications(); }
+      
+      if (response.ok) { 
+        toast({ title: "Publicación actualizada con éxito" }); 
+        setShowEditModal(false); 
+        fetchMyPublications(); 
+      } else {
+        const errData = await response.json()
+        toast({ variant: "destructive", title: "Error", description: errData.message || "No se pudo actualizar" })
+      }
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error de conexión" })
     } finally { setIsUpdatingPub(false) }
   }
 
@@ -586,9 +633,118 @@ function ProfileContent() {
       </main>
 
       {/* Modales */}
-      <Dialog open={showEditModal} onOpenChange={setShowEditModal}><DialogContent className="rounded-2xl max-w-lg"><DialogHeader><DialogTitle>Editar Publicación</DialogTitle><DialogDescription>Modifica los datos de tu artículo.</DialogDescription></DialogHeader>
-        {editingPub && <form onSubmit={handleUpdatePublication} className="space-y-4"><div><Label>Título</Label><Input value={editingPub.titulo} onChange={e => setEditingPub({...editingPub, titulo: e.target.value})} className="rounded-xl"/></div><div><Label>Precio Día (S/)</Label><Input type="number" value={editingPub.precio_dia} onChange={e => setEditingPub({...editingPub, precio_dia: e.target.value})} className="rounded-xl"/></div><div><Label>Descripción</Label><textarea value={editingPub.descripcion} onChange={e => setEditingPub({...editingPub, descripcion: e.target.value})} className="w-full min-h-[100px] p-3 border rounded-xl bg-card text-sm outline-none"/></div><DialogFooter><Button type="submit" disabled={isUpdatingPub} className="w-full rounded-xl h-12">Guardar</Button></DialogFooter></form>}
-      </DialogContent></Dialog>
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="rounded-3xl max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-black">Editar Publicación</DialogTitle>
+            <DialogDescription>Modifica los detalles de tu artículo en alquiler.</DialogDescription>
+          </DialogHeader>
+          
+          {editingPub && (
+            <form onSubmit={handleUpdatePublication} className="space-y-6 py-4">
+              {/* Fotos */}
+              <div className="space-y-3">
+                <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Fotos del artículo</Label>
+                <div className="grid grid-cols-4 gap-2 mb-2">
+                  {editingPub.imagenes?.map((img: any, i: number) => (
+                    <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-border group">
+                      <img src={img.url_photo} className="object-cover w-full h-full" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="text-[10px] text-white font-bold">Imagen Actual</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <MultiImageUpload 
+                  images={editingPub.new_images || []} 
+                  onChange={(imgs) => setEditingPub({...editingPub, new_images: imgs})} 
+                  maxImages={8 - (editingPub.imagenes?.length || 0)} 
+                />
+                <p className="text-[10px] text-muted-foreground">Puedes añadir hasta 8 fotos en total.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Título</Label>
+                    <Input value={editingPub.titulo} onChange={e => setEditingPub({...editingPub, titulo: e.target.value})} className="rounded-xl h-12" placeholder="Ej: Cámara Sony A7III"/>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Estado del artículo</Label>
+                    <Select value={editingPub.condicion} onValueChange={(v) => setEditingPub({...editingPub, condicion: v})}>
+                      <SelectTrigger className="h-12 rounded-xl">
+                        <SelectValue placeholder="Seleccionar estado" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {conditions.map(c => (
+                          <SelectItem key={c.id} value={c.id} className="rounded-lg">{c.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Visibilidad</Label>
+                    <div className="flex items-center justify-between p-3 rounded-xl border border-border bg-secondary/10">
+                      <div className="flex items-center gap-2">
+                        {editingPub.estado ? <Eye className="h-4 w-4 text-primary" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
+                        <span className="text-sm font-medium">{editingPub.estado ? "Visible para todos" : "Oculto"}</span>
+                      </div>
+                      <Switch 
+                        checked={editingPub.estado} 
+                        onCheckedChange={(checked) => setEditingPub({...editingPub, estado: checked})} 
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Precio por día (S/)</Label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">S/</span>
+                      <Input 
+                        type="number" 
+                        value={editingPub.precio_dia} 
+                        onChange={e => setEditingPub({...editingPub, precio_dia: e.target.value})} 
+                        className="rounded-xl h-12 pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-muted-foreground font-medium">Comisión Seguro (30%)</span>
+                      <span className="font-bold text-accent">S/ {(Number(editingPub.precio_dia) * 0.3).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-black">Tu Ganancia Neta</span>
+                      <span className="text-lg font-black text-primary">S/ {(Number(editingPub.precio_dia) * 0.7).toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-widest font-black text-muted-foreground/80">Descripción</Label>
+                    <textarea 
+                      value={editingPub.descripcion} 
+                      onChange={e => setEditingPub({...editingPub, descripcion: e.target.value})} 
+                      className="w-full min-h-[100px] p-4 border rounded-2xl bg-card text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="pt-4">
+                <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)} className="rounded-xl">Cancelar</Button>
+                <Button type="submit" disabled={isUpdatingPub} className="rounded-xl h-12 px-8 bg-primary font-bold shadow-lg shadow-primary/20">
+                  {isUpdatingPub ? <Loader2 className="h-4 w-4 animate-spin" /> : "Guardar Cambios"}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showPassModal} onOpenChange={setShowPassModal}><DialogContent className="max-w-md rounded-2xl"><DialogHeader><DialogTitle>Seguridad</DialogTitle><DialogDescription>Cambia tu contraseña.</DialogDescription></DialogHeader>
         <form onSubmit={handleChangePassword} className="space-y-4 py-2"><div className="space-y-2"><Label>Clave Actual</Label><Input type="password" value={passData.current_password} onChange={e => setPassData({...passData, current_password: e.target.value})} className="rounded-xl"/></div><div className="space-y-2"><Label>Nueva Clave</Label><Input type="password" value={passData.new_password} onChange={e => setPassData({...passData, new_password: e.target.value})} className="rounded-xl"/></div><div className="space-y-2"><Label>Confirmar Clave</Label><Input type="password" value={passData.new_password_confirmation} onChange={e => setPassData({...passData, new_password_confirmation: e.target.value})} className="rounded-xl"/></div><DialogFooter className="pt-2"><Button type="submit" disabled={isChangingPass} className="w-full rounded-xl">{isChangingPass ? <Loader2 className="animate-spin h-4 w-4" /> : "Actualizar"}</Button></DialogFooter></form>
