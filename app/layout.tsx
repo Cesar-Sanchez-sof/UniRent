@@ -10,6 +10,15 @@ export const metadata: Metadata = {
   title: 'NexUs - Alquila entre universitarios',
   description: 'Marketplace P2P para que universitarios alquilen calculadoras, cámaras, proyectores, herramientas y más entre sí. Economía circular en tu campus.',
   generator: 'v0.app',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'NexUs',
+  },
+  formatDetection: {
+    telephone: false,
+  },
   icons: {
     icon: [
       {
