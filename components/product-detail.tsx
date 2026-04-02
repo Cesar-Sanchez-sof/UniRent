@@ -93,8 +93,14 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
 
   const handleRentalRequest = async () => {
     const token = localStorage.getItem('auth_token')
+    
     if (!token) {
-      toast({ title: "Inicia sesión", description: "Debes estar conectado para solicitar un alquiler.", variant: "destructive" })
+      toast({ 
+        title: "Inicia sesión", 
+        description: "Debes iniciar sesión para separar alquiler.", 
+        variant: "destructive" 
+      })
+      window.location.href = "/login"
       return
     }
 
@@ -141,7 +147,7 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm">
         <div className="bg-card p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
           <Loader2 className="h-10 w-10 text-primary animate-spin" />
-          <p className="font-medium text-muted-foreground italic">Cargando disponibilidad...</p>
+          <p className="font-medium text-muted-foreground italic text-sm">Cargando disponibilidad...</p>
         </div>
       </div>
     )
@@ -150,10 +156,13 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
   if (error || !product) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm">
-        <div className="bg-card p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center text-destructive">
-          <AlertCircle className="h-12 w-12 mx-auto mb-4" />
-          <p className="mb-6">{error || "Producto no encontrado"}</p>
-          <Button onClick={onClose} className="w-full">Cerrar</Button>
+        <div className="bg-card p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border border-border">
+          <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="h-8 w-8 text-destructive" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground mb-2">Error de Carga</h3>
+          <p className="text-muted-foreground text-sm mb-6">{error || "No se pudo encontrar la información del producto."}</p>
+          <Button onClick={onClose} variant="default" className="w-full rounded-xl h-12 font-bold shadow-lg">Cerrar</Button>
         </div>
       </div>
     )
@@ -166,13 +175,14 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
   const total = subtotal + deposit
 
   const images = product.imagenes?.length > 0 ? product.imagenes.map((img: any) => img.url_photo) : ["/placeholder.jpg"]
+  const isLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('auth_token')
 
   return (
     <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center" role="dialog" aria-modal="true">
       <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div className="relative bg-card w-full max-w-4xl max-h-[95vh] lg:max-h-[90vh] rounded-t-3xl lg:rounded-3xl overflow-y-auto shadow-2xl">
-        <button onClick={onClose} className="absolute top-4 right-4 z-20 h-9 w-9 rounded-full bg-card/90 backdrop-blur-md flex items-center justify-center shadow-lg border border-border/50"><X className="h-4 w-4" /></button>
-        <div className="lg:grid lg:grid-cols-[1fr,1.1fr]">
+      <div className="relative bg-card w-full max-w-5xl max-h-[95vh] lg:max-h-[92vh] rounded-t-[2.5rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl border-t lg:border border-border">
+        <button onClick={onClose} className="absolute top-6 right-6 z-20 h-10 w-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center shadow-xl border border-border/50 transition-all hover:bg-card hover:scale-110"><X className="h-5 w-5" /></button>
+        <div className="h-full overflow-y-auto lg:grid lg:grid-cols-[1.2fr,1fr]">
           <div className="flex flex-col border-r border-border/50">
             <div className="relative aspect-[4/3] bg-muted">
               <Image src={images[currentImage]} alt={product.titulo} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 40vw" priority />
