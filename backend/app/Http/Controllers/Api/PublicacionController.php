@@ -71,7 +71,6 @@ class PublicacionController extends Controller
             $user = $request->user();
             $publicaciones = Publicacion::with(['imagenes', 'categoria', 'distrito', 'usuario'])
                 ->where('id_usuario', $user->id_usuario)
-                ->where('estado', true)
                 ->orderBy('id_publicacion', 'desc')
                 ->get();
 
@@ -163,6 +162,7 @@ class PublicacionController extends Controller
             'condicion' => 'sometimes|required|string|max:50',
             'id_distrito' => 'sometimes|required|exists:distrito,id_distrito',
             'id_categoria' => 'sometimes|required|string',
+            'estado' => 'sometimes|string', 
             'imagenes' => 'sometimes|array|max:8',
             'imagenes.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
             'delete_images' => 'sometimes|array', // IDs de imágenes a eliminar
@@ -181,6 +181,11 @@ class PublicacionController extends Controller
             
             if ($request->has('id_categoria')) {
                 $updateData['id_categoria'] = $this->mapCategoryToId($request->id_categoria);
+            }
+
+            // Convertir estado a booleano real
+            if ($request->has('estado')) {
+                $updateData['estado'] = filter_var($request->estado, FILTER_VALIDATE_BOOLEAN);
             }
 
             $publicacion->update($updateData);
