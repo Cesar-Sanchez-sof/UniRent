@@ -709,10 +709,11 @@ function ProfileContent() {
                   <div className="col-span-1 md:col-span-2 space-y-1.5"><Label>Correo Electrónico</Label><Input value={formData.correo} onChange={e => setFormData({ ...formData, correo: e.target.value })} className="rounded-xl h-11" /></div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-      </main>
+      </div>
+    </main>
 
       {/* Modales */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
