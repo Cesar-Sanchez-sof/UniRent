@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { NexusHeader } from "@/components/nexus-header"
 import { NexusFooter } from "@/components/nexus-footer"
 import { ProductCard } from "@/components/product-card"
-import { 
+import {
   User, Settings, Star, CreditCard, GraduationCap, Phone, Mail, Save, Loader2,
   BadgeCheck, AlertCircle, Camera, AtSign, Package, History, Plus, X, Check, Lock, Eye, EyeOff, Edit2, Trash2, Calendar, MapPin, Inbox, CheckCircle2, XCircle,
   MessageCircle
@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils"
 import { API_URL } from "../../lib/api"
 import { format, differenceInDays } from "date-fns"
 import { es } from "date-fns/locale"
+import { MultiImageUpload } from "@/components/multi-image-upload"
 import {
   Dialog,
   DialogContent,
@@ -29,10 +30,16 @@ import {
 
 type TabType = 'config' | 'publications' | 'rentals' | 'incoming';
 
+interface ImageFile {
+  id: string
+  file: File
+  preview: string
+}
+
 export function formatPrice(n: number): string {
-  return n.toLocaleString('es-PE', { 
-    minimumFractionDigits: 2, 
-    maximumFractionDigits: 2 
+  return n.toLocaleString('es-PE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
   });
 }
 
@@ -48,7 +55,7 @@ function ProfileContent() {
   const { toast } = useToast()
   const searchParams = useSearchParams()
   const tabParam = searchParams.get('tab') as TabType
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [activeTab, setActiveTab] = useState<TabType>(tabParam || 'config')
   const [isLoading, setIsLoading] = useState(true)
@@ -56,7 +63,7 @@ function ProfileContent() {
   const [isChangingPass, setIsChangingPass] = useState(false)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
   const [user, setUser] = useState<any>(null)
-  
+
   // Publicaciones
   const [myPublications, setMyPublications] = useState<any[]>([])
   const [isPubsLoading, setIsPubsLoading] = useState(false)
@@ -73,6 +80,8 @@ function ProfileContent() {
   const [editingPub, setEditingPub] = useState<any>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [isUpdatingPub, setIsUpdatingPub] = useState(false)
+  const [newImages, setNewImages] = useState<ImageFile[]>([])
+  const [deleteImageIds, setDeleteImageIds] = useState<number[]>([])
 
   // Reseñas
   const [selectedRentalForReview, setSelectedRentalForReview] = useState<any>(null)
@@ -88,7 +97,7 @@ function ProfileContent() {
   // Estados para la contraseña
   const [showPassModal, setShowPassModal] = useState(false)
   const [passData, setPassData] = useState({ current_password: "", new_password: "", new_password_confirmation: "" })
-  
+
   const [formData, setFormData] = useState({
     primer_nombre: "", segundo_nombre: "", primer_apellido: "", segundo_apellido: "",
     username: "", correo: "", telefono: ""
@@ -109,7 +118,7 @@ function ProfileContent() {
         // Usamos foto_perfil que es el campo estándar de nuestro backend
         if (parsedUser.foto_perfil) setPreviewUrl(parsedUser.foto_perfil)
         else if (parsedUser.foto) setPreviewUrl(parsedUser.foto)
-        
+
         setFormData({
           primer_nombre: parsedUser.primer_nombre || "",
           segundo_nombre: parsedUser.segundo_nombre || "",
@@ -119,7 +128,7 @@ function ProfileContent() {
           correo: parsedUser.correo || "",
           telefono: parsedUser.telefono || ""
         })
-        
+
         // Si ya tenemos datos locales, podemos quitar el loader principal
         // y dejar que la API actualice en segundo plano
         setIsLoading(false)
@@ -153,10 +162,10 @@ function ProfileContent() {
           // Actualizamos localStorage con los datos más frescos
           localStorage.setItem('user', JSON.stringify(data))
         }
-      } catch (e) { 
-        console.error(e) 
-      } finally { 
-        setIsLoading(false) 
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchUser()
@@ -235,10 +244,10 @@ function ProfileContent() {
     try {
       const response = await fetch(`${API_URL}/resenas`, {
         method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${localStorage.getItem('auth_token')}`, 
-          "Accept": "application/json", 
-          "Content-Type": "application/json" 
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('auth_token')}`,
+          "Accept": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           id_alquiler: selectedRentalForReview.id_alquiler,
@@ -258,19 +267,56 @@ function ProfileContent() {
   }
 
   const handleEditClick = (pub: any) => {
-    setEditingPub({...pub}); setShowEditModal(true)
+    setEditingPub({ ...pub }); 
+    setNewImages([]);
+    setDeleteImageIds([]);
+    setShowEditModal(true);
   }
 
   const handleUpdatePublication = async (e: React.FormEvent) => {
-    e.preventDefault(); setIsUpdatingPub(true)
+    e.preventDefault(); 
+    setIsUpdatingPub(true);
+    
+    const token = localStorage.getItem('auth_token');
+    
     try {
+      const formData = new FormData();
+      formData.append('titulo', editingPub.titulo);
+      formData.append('precio_dia', editingPub.precio_dia);
+      formData.append('descripcion', editingPub.descripcion);
+      
+      // Agregar nuevas imágenes
+      newImages.forEach((img, index) => {
+        formData.append(`imagenes[${index}]`, img.file);
+      });
+
+      // Agregar IDs de imágenes a eliminar
+      deleteImageIds.forEach((id, index) => {
+        formData.append(`delete_images[${index}]`, id.toString());
+      });
+
       const response = await fetch(`${API_URL}/publicaciones/${editingPub.id_publicacion}`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${localStorage.getItem('auth_token')}`, "Accept": "application/json", "Content-Type": "application/json" },
-        body: JSON.stringify(editingPub)
-      })
-      if (response.ok) { toast({ title: "Publicación actualizada" }); setShowEditModal(false); fetchMyPublications(); }
-    } finally { setIsUpdatingPub(false) }
+        method: "POST", // El backend acepta POST para actualización con FormData
+        headers: { 
+          "Authorization": `Bearer ${token}`, 
+          "Accept": "application/json"
+        },
+        body: formData
+      });
+
+      if (response.ok) { 
+        toast({ title: "Publicación actualizada con éxito" }); 
+        setShowEditModal(false); 
+        fetchMyPublications(); 
+      } else {
+        const errorData = await response.json();
+        toast({ variant: "destructive", title: "Error al actualizar", description: errorData.message });
+      }
+    } catch (error) {
+      toast({ variant: "destructive", title: "Error de conexión" });
+    } finally { 
+      setIsUpdatingPub(false);
+    }
   }
 
   const handleDeletePublication = async (id: number) => {
@@ -361,10 +407,10 @@ function ProfileContent() {
   return (
     <div className="min-h-screen bg-secondary/30">
       <NexusHeader />
-      
+
       <main className="max-w-7xl mx-auto px-4 lg:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
+
           <aside className="lg:col-span-1 space-y-6">
             <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm bg-white">
               <div className="h-24 bg-primary/10 flex items-end justify-center pb-4 relative">
@@ -403,11 +449,11 @@ function ProfileContent() {
                   <div><h3 className="text-lg font-bold">Mis Publicaciones</h3><p className="text-sm text-muted-foreground">Gestiona tus artículos publicados.</p></div>
                   <Button className="rounded-xl gap-2" asChild><a href="/publish"><Plus className="h-4 w-4" /> Publicar artículo</a></Button>
                 </div>
-                {isPubsLoading ? <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{[1,2,3].map(i => <div key={i} className="aspect-square bg-muted animate-pulse rounded-2xl"/>)}</div> : myPublications.length > 0 ? (
+                {isPubsLoading ? <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{[1, 2, 3].map(i => <div key={i} className="aspect-square bg-muted animate-pulse rounded-2xl" />)}</div> : myPublications.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {myPublications.map(pub => (
                       <div key={pub.id_publicacion} className="relative group">
-                        <ProductCard title={pub.titulo} images={pub.imagenes?.length > 0 ? pub.imagenes.map((img: any) => img.url_photo) : ["/placeholder.jpg"]} distance={pub.distrito?.nombre || "Lima"} pricePerDay={Number(pub.precio_dia)} trustScore={Number(pub.usuario?.puntaje_dueno) || 5.0} verified={pub.estado} onClick={() => {}} onEdit={() => handleEditClick(pub)} />
+                        <ProductCard title={pub.titulo} images={pub.imagenes?.length > 0 ? pub.imagenes.map((img: any) => img.url_photo) : ["/placeholder.jpg"]} distance={pub.distrito?.nombre || "Lima"} pricePerDay={Number(pub.precio_dia)} trustScore={Number(pub.usuario?.puntaje_dueno) || 5.0} verified={pub.estado} onClick={() => { }} onEdit={() => handleEditClick(pub)} />
                         <div className="absolute top-3 right-14 z-30 opacity-0 group-hover:opacity-100 transition-all transform translate-y-[-5px] group-hover:translate-y-0"><button onClick={(e) => { e.stopPropagation(); handleDeletePublication(pub.id_publicacion); }} className="bg-white/90 backdrop-blur-md text-destructive p-2 rounded-xl shadow-lg hover:bg-destructive hover:text-white transition-all"><Trash2 className="h-4 w-4" /></button></div>
                       </div>
                     ))}
@@ -419,7 +465,7 @@ function ProfileContent() {
             {activeTab === 'rentals' && (
               <div className="space-y-6">
                 <div className="bg-card rounded-2xl border border-border p-8 shadow-sm bg-white"><h3 className="text-lg font-bold">Mis Alquileres</h3><p className="text-sm text-muted-foreground">Artículos que has solicitado.</p></div>
-                {isRentalsLoading ? <div className="space-y-4">{[1,2].map(i => <div key={i} className="h-24 bg-muted animate-pulse rounded-2xl"/>)}</div> : myRentals.length > 0 ? (
+                {isRentalsLoading ? <div className="space-y-4">{[1, 2].map(i => <div key={i} className="h-24 bg-muted animate-pulse rounded-2xl" />)}</div> : myRentals.length > 0 ? (
                   <div className="grid grid-cols-1 gap-4">
                     {myRentals.map(rental => (
                       <div key={rental.id_alquiler} className="bg-card rounded-2xl border border-border p-4 flex gap-6 items-center shadow-sm bg-white">
@@ -432,24 +478,24 @@ function ProfileContent() {
                               <h4 className="font-bold">{rental.publicacion?.titulo}</h4>
                               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5"><User className="h-3 w-3" /> Dueño: {rental.publicacion?.usuario?.primer_nombre} {rental.publicacion?.usuario?.primer_apellido}</p>
                             </div>
-                            <span className={cn("px-3 py-1 rounded-full text-[10px] font-bold uppercase", 
-                              rental.estado === 'Pendiente' ? "bg-amber-100 text-amber-700" : 
-                              rental.estado === 'Activo' ? "bg-green-100 text-green-700" : 
-                              rental.estado === 'Finalizado' ? "bg-blue-100 text-blue-700" :
-                              "bg-secondary text-muted-foreground")}>{rental.estado}</span>
+                            <span className={cn("px-3 py-1 rounded-full text-[10px] font-bold uppercase",
+                              rental.estado === 'Pendiente' ? "bg-amber-100 text-amber-700" :
+                                rental.estado === 'Activo' ? "bg-green-100 text-green-700" :
+                                  rental.estado === 'Finalizado' ? "bg-blue-100 text-blue-700" :
+                                    "bg-secondary text-muted-foreground")}>{rental.estado}</span>
                           </div>
                           <div className="flex gap-4 mt-2 border-t border-border/50 pt-2">
                             <div className="flex flex-col">
                               <span className="text-[10px] uppercase font-bold text-muted-foreground">Periodo</span>
-                              <p className="text-xs font-semibold">{format(new Date(rental.fecha_alquiler), "dd/MM", {locale: es})} al {format(new Date(rental.fecha_devolucion), "dd/MM", {locale: es})}</p>
+                              <p className="text-xs font-semibold">{format(new Date(rental.fecha_alquiler), "dd/MM", { locale: es })} al {format(new Date(rental.fecha_devolucion), "dd/MM", { locale: es })}</p>
                             </div>
                             <div className="flex flex-col">
                               <span className="text-[10px] uppercase font-bold text-muted-foreground">Total</span>
                               <p className="text-sm font-black">S/ {formatPrice(Number(rental.monto_total))}</p>
                             </div>
                             {rental.publicacion?.usuario?.telefono && (
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 onClick={() => window.open(`https://wa.me/51${rental.publicacion.usuario.telefono}?text=Hola ${rental.publicacion.usuario.primer_nombre}, te contacto por el alquiler de ${rental.publicacion.titulo}`, '_blank')}
                                 className="ml-auto rounded-xl gap-2 h-8 px-4 text-xs border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800"
@@ -482,7 +528,7 @@ function ProfileContent() {
                   <h3 className="text-lg font-bold">Solicitudes Recibidas</h3>
                   <p className="text-sm text-muted-foreground">Gestiona quién quiere alquilar tus artículos.</p>
                 </div>
-                {isIncomingLoading ? <div className="space-y-4">{[1,2].map(i => <div key={i} className="h-28 bg-muted animate-pulse rounded-2xl"/>)}</div> : incomingRentals.length > 0 ? (
+                {isIncomingLoading ? <div className="space-y-4">{[1, 2].map(i => <div key={i} className="h-28 bg-muted animate-pulse rounded-2xl" />)}</div> : incomingRentals.length > 0 ? (
                   <div className="grid grid-cols-1 gap-4">
                     {incomingRentals.map(req => (
                       <div key={req.id_alquiler} className="bg-card rounded-2xl border border-border p-5 flex gap-6 shadow-sm bg-white">
@@ -502,13 +548,13 @@ function ProfileContent() {
                             </div>
                             <span className={cn("px-3 py-1 rounded-full text-[10px] font-bold uppercase", req.estado === 'Pendiente' ? "bg-amber-100 text-amber-700" : req.estado === 'Activo' ? "bg-green-100 text-green-700" : "bg-secondary text-muted-foreground")}>{req.estado}</span>
                           </div>
-                          
+
                           <div className="flex items-end justify-between mt-4">
                             <div className="flex gap-6">
                               <div className="flex flex-col">
                                 <span className="text-[10px] uppercase font-bold text-muted-foreground">Periodo solicitado</span>
                                 <p className="text-xs font-semibold">
-                                  {format(new Date(req.fecha_alquiler), "dd MMM", {locale: es})} - {format(new Date(req.fecha_devolucion), "dd MMM", {locale: es})}
+                                  {format(new Date(req.fecha_alquiler), "dd MMM", { locale: es })} - {format(new Date(req.fecha_devolucion), "dd MMM", { locale: es })}
                                   <span className="ml-1 text-muted-foreground font-normal">
                                     ({differenceInDays(new Date(req.fecha_devolucion), new Date(req.fecha_alquiler)) + 1} {differenceInDays(new Date(req.fecha_devolucion), new Date(req.fecha_alquiler)) + 1 === 1 ? 'día' : 'días'})
                                   </span>
@@ -518,18 +564,18 @@ function ProfileContent() {
                                 <span className="text-[10px] uppercase font-bold text-muted-foreground">Ingreso Estimado (Neto)</span>
                                 <p className="text-sm font-black text-primary">
                                   S/ {formatPrice(
-                                    (Number(req.publicacion?.precio_dia) - Number(req.publicacion?.deposito || 0)) * 
+                                    (Number(req.publicacion?.precio_dia) - Number(req.publicacion?.deposito || 0)) *
                                     (differenceInDays(new Date(req.fecha_devolucion), new Date(req.fecha_alquiler)) + 1)
                                   )}
                                 </p>
                               </div>
                             </div>
-                            
+
                             <div className="flex gap-2">
                               {req.usuario?.telefono && (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
+                                <Button
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => window.open(`https://wa.me/51${req.usuario.telefono}?text=Hola ${req.usuario.primer_nombre}, te contacto sobre tu solicitud para alquilar mi ${req.publicacion.titulo}`, '_blank')}
                                   className="rounded-xl border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800"
                                 >
@@ -573,11 +619,11 @@ function ProfileContent() {
                   </div>
                 </div>
                 <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-1.5"><Label>Primer Nombre</Label><Input value={formData.primer_nombre} onChange={e => setFormData({...formData, primer_nombre: e.target.value})} className="rounded-xl h-11" /></div>
-                  <div className="space-y-1.5"><Label>Apellido Paterno</Label><Input value={formData.primer_apellido} onChange={e => setFormData({...formData, primer_apellido: e.target.value})} className="rounded-xl h-11" /></div>
-                  <div className="space-y-1.5"><Label>Usuario</Label><Input value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="rounded-xl h-11" /></div>
-                  <div className="space-y-1.5"><Label>Teléfono</Label><Input maxLength={9} value={formData.telefono} onChange={e => setFormData({...formData, telefono: e.target.value})} className="rounded-xl h-11" /></div>
-                  <div className="col-span-1 md:col-span-2 space-y-1.5"><Label>Correo Electrónico</Label><Input value={formData.correo} onChange={e => setFormData({...formData, correo: e.target.value})} className="rounded-xl h-11" /></div>
+                  <div className="space-y-1.5"><Label>Primer Nombre</Label><Input value={formData.primer_nombre} onChange={e => setFormData({ ...formData, primer_nombre: e.target.value })} className="rounded-xl h-11" /></div>
+                  <div className="space-y-1.5"><Label>Apellido Paterno</Label><Input value={formData.primer_apellido} onChange={e => setFormData({ ...formData, primer_apellido: e.target.value })} className="rounded-xl h-11" /></div>
+                  <div className="space-y-1.5"><Label>Usuario</Label><Input value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className="rounded-xl h-11" /></div>
+                  <div className="space-y-1.5"><Label>Teléfono</Label><Input maxLength={9} value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value })} className="rounded-xl h-11" /></div>
+                  <div className="col-span-1 md:col-span-2 space-y-1.5"><Label>Correo Electrónico</Label><Input value={formData.correo} onChange={e => setFormData({ ...formData, correo: e.target.value })} className="rounded-xl h-11" /></div>
                 </div>
               </div>
             )}
@@ -586,16 +632,99 @@ function ProfileContent() {
       </main>
 
       {/* Modales */}
-      <Dialog open={showEditModal} onOpenChange={setShowEditModal}><DialogContent className="rounded-2xl max-w-lg"><DialogHeader><DialogTitle>Editar Publicación</DialogTitle><DialogDescription>Modifica los datos de tu artículo.</DialogDescription></DialogHeader>
-        {editingPub && <form onSubmit={handleUpdatePublication} className="space-y-4"><div><Label>Título</Label><Input value={editingPub.titulo} onChange={e => setEditingPub({...editingPub, titulo: e.target.value})} className="rounded-xl"/></div><div><Label>Precio Día (S/)</Label><Input type="number" value={editingPub.precio_dia} onChange={e => setEditingPub({...editingPub, precio_dia: e.target.value})} className="rounded-xl"/></div><div><Label>Descripción</Label><textarea value={editingPub.descripcion} onChange={e => setEditingPub({...editingPub, descripcion: e.target.value})} className="w-full min-h-[100px] p-3 border rounded-xl bg-card text-sm outline-none"/></div><DialogFooter><Button type="submit" disabled={isUpdatingPub} className="w-full rounded-xl h-12">Guardar</Button></DialogFooter></form>}
-      </DialogContent></Dialog>
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="rounded-2xl max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Editar Publicación</DialogTitle>
+            <DialogDescription>Actualiza los detalles y fotos de tu artículo.</DialogDescription>
+          </DialogHeader>
+          
+          {editingPub && (
+            <form onSubmit={handleUpdatePublication} className="space-y-6 py-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase font-bold text-muted-foreground">Título</Label>
+                    <Input 
+                      value={editingPub.titulo} 
+                      onChange={e => setEditingPub({ ...editingPub, titulo: e.target.value })} 
+                      className="rounded-xl h-11" 
+                    />
+                  </div>
+                  
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase font-bold text-muted-foreground">Precio por día (S/)</Label>
+                    <Input 
+                      type="number" 
+                      value={editingPub.precio_dia} 
+                      onChange={e => setEditingPub({ ...editingPub, precio_dia: e.target.value })} 
+                      className="rounded-xl h-11" 
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase font-bold text-muted-foreground">Descripción</Label>
+                    <textarea 
+                      value={editingPub.descripcion} 
+                      onChange={e => setEditingPub({ ...editingPub, descripcion: e.target.value })} 
+                      className="w-full min-h-[120px] p-4 border rounded-2xl bg-secondary/10 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none" 
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <Label className="text-xs uppercase font-bold text-muted-foreground">Fotos del artículo</Label>
+                  
+                  {/* Imágenes actuales */}
+                  <div className="grid grid-cols-3 gap-2 mb-4">
+                    {editingPub.imagenes?.map((img: any) => (
+                      <div key={img.id_imagen} className="relative aspect-square rounded-lg overflow-hidden border border-border group">
+                        <img src={img.url_photo} className={cn("object-cover w-full h-full transition-opacity", deleteImageIds.includes(img.id_imagen) && "opacity-20")} />
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            if (deleteImageIds.includes(img.id_imagen)) {
+                              setDeleteImageIds(prev => prev.filter(id => id !== img.id_imagen));
+                            } else {
+                              setDeleteImageIds(prev => [...prev, img.id_imagen]);
+                            }
+                          }}
+                          className={cn(
+                            "absolute inset-0 flex items-center justify-center transition-all",
+                            deleteImageIds.includes(img.id_imagen) ? "bg-primary/20 text-primary" : "bg-black/40 opacity-0 group-hover:opacity-100 text-white"
+                          )}
+                        >
+                          {deleteImageIds.includes(img.id_imagen) ? <Check className="h-6 w-6" /> : <Trash2 className="h-5 w-5" />}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Nuevas imágenes */}
+                  <div className="space-y-2">
+                    <Label className="text-[10px] text-muted-foreground">Agregar nuevas fotos</Label>
+                    <MultiImageUpload images={newImages} onChange={setNewImages} maxImages={8 - (editingPub.imagenes?.length || 0) + deleteImageIds.length} />
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter className="pt-4 gap-3">
+                <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)} className="rounded-xl h-12">Cancelar</Button>
+                <Button type="submit" disabled={isUpdatingPub} className="flex-1 rounded-xl h-12 bg-[#1e5d8c] hover:bg-[#164a6d] font-bold text-white shadow-lg">
+                  {isUpdatingPub ? <Loader2 className="h-5 w-5 animate-spin" /> : "Guardar cambios"}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showPassModal} onOpenChange={setShowPassModal}><DialogContent className="max-w-md rounded-2xl"><DialogHeader><DialogTitle>Seguridad</DialogTitle><DialogDescription>Cambia tu contraseña.</DialogDescription></DialogHeader>
-        <form onSubmit={handleChangePassword} className="space-y-4 py-2"><div className="space-y-2"><Label>Clave Actual</Label><Input type="password" value={passData.current_password} onChange={e => setPassData({...passData, current_password: e.target.value})} className="rounded-xl"/></div><div className="space-y-2"><Label>Nueva Clave</Label><Input type="password" value={passData.new_password} onChange={e => setPassData({...passData, new_password: e.target.value})} className="rounded-xl"/></div><div className="space-y-2"><Label>Confirmar Clave</Label><Input type="password" value={passData.new_password_confirmation} onChange={e => setPassData({...passData, new_password_confirmation: e.target.value})} className="rounded-xl"/></div><DialogFooter className="pt-2"><Button type="submit" disabled={isChangingPass} className="w-full rounded-xl">{isChangingPass ? <Loader2 className="animate-spin h-4 w-4" /> : "Actualizar"}</Button></DialogFooter></form>
+        <form onSubmit={handleChangePassword} className="space-y-4 py-2"><div className="space-y-2"><Label>Clave Actual</Label><Input type="password" value={passData.current_password} onChange={e => setPassData({ ...passData, current_password: e.target.value })} className="rounded-xl" /></div><div className="space-y-2"><Label>Nueva Clave</Label><Input type="password" value={passData.new_password} onChange={e => setPassData({ ...passData, new_password: e.target.value })} className="rounded-xl" /></div><div className="space-y-2"><Label>Confirmar Clave</Label><Input type="password" value={passData.new_password_confirmation} onChange={e => setPassData({ ...passData, new_password_confirmation: e.target.value })} className="rounded-xl" /></div><DialogFooter className="pt-2"><Button type="submit" disabled={isChangingPass} className="w-full rounded-xl">{isChangingPass ? <Loader2 className="animate-spin h-4 w-4" /> : "Actualizar"}</Button></DialogFooter></form>
       </DialogContent></Dialog>
 
       <Dialog open={showPhotoModal} onOpenChange={setShowPhotoModal}><DialogContent className="max-w-xs rounded-2xl"><DialogHeader><DialogTitle>Avatar</DialogTitle><DialogDescription>Confirma tu nueva foto.</DialogDescription></DialogHeader>
-        <div className="flex flex-col items-center py-4"><div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20">{previewUrl && <img src={previewUrl} className="w-full h-full object-cover"/>}</div><div className="grid grid-cols-2 gap-2 w-full mt-6"><Button variant="ghost" onClick={handleCancelPhoto} className="rounded-xl">Cancelar</Button><Button onClick={handleUploadPhoto} disabled={isUploadingPhoto} className="rounded-xl">Confirmar</Button></div></div>
+        <div className="flex flex-col items-center py-4"><div className="w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20">{previewUrl && <img src={previewUrl} className="w-full h-full object-cover" />}</div><div className="grid grid-cols-2 gap-2 w-full mt-6"><Button variant="ghost" onClick={handleCancelPhoto} className="rounded-xl">Cancelar</Button><Button onClick={handleUploadPhoto} disabled={isUploadingPhoto} className="rounded-xl">Confirmar</Button></div></div>
       </DialogContent></Dialog>
 
       <Dialog open={showReviewModal} onOpenChange={setShowReviewModal}>
@@ -628,9 +757,9 @@ function ProfileContent() {
                       reviewData.calificacion >= star ? "fill-current filter drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]" : "fill-none"
                     )} />
                     {reviewData.calificacion === star && (
-                       <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-amber-400 text-white text-[10px] font-black px-2 py-1 rounded-lg animate-in zoom-in fade-in">
-                         {star === 5 ? '¡Excelente!' : star === 4 ? 'Muy Bueno' : star === 3 ? 'Bueno' : star === 2 ? 'Regular' : 'Malo'}
-                       </span>
+                      <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-amber-400 text-white text-[10px] font-black px-2 py-1 rounded-lg animate-in zoom-in fade-in">
+                        {star === 5 ? '¡Excelente!' : star === 4 ? 'Muy Bueno' : star === 3 ? 'Bueno' : star === 2 ? 'Regular' : 'Malo'}
+                      </span>
                     )}
                   </button>
                 ))}
@@ -647,9 +776,9 @@ function ProfileContent() {
               />
             </div>
             <DialogFooter>
-              <Button 
-                type="submit" 
-                disabled={isSubmittingReview} 
+              <Button
+                type="submit"
+                disabled={isSubmittingReview}
                 className="w-full rounded-2xl h-14 gap-3 text-base font-black shadow-[0_10px_20px_-10px_rgba(var(--primary),0.5)] hover:shadow-none transition-all duration-300 active:translate-y-1"
               >
                 {isSubmittingReview ? <Loader2 className="animate-spin h-6 w-6" /> : (
