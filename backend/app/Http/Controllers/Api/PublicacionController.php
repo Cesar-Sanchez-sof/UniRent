@@ -147,24 +147,85 @@ class PublicacionController extends Controller
     public function update(Request $request, $id)
     {
         $user = $request->user();
+        
+        // Buscamos la publicación que pertenezca al usuario
         $publicacion = Publicacion::where('id_usuario', $user->id_usuario)->find($id);
 
         if (!$publicacion) {
-            return response()->json(['message' => 'No encontrada'], 404);
+            return response()->json(['message' => 'Publicación no encontrada o no tienes permisos'], 404);
+        }
+
+        // Validación de datos
+        $validator = Validator::make($request->all(), [
+            'titulo' => 'sometimes|required|string|max:80',
+            'descripcion' => 'sometimes|required|string|max:500',
+            'precio_dia' => 'sometimes|required|numeric|min:1',
+            'condicion' => 'sometimes|required|string|max:50',
+            'id_distrito' => 'sometimes|required|exists:distrito,id_distrito',
+            'id_categoria' => 'sometimes|required|string',
+            'imagenes' => 'sometimes|array|max:8',
+            'imagenes.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
+            'delete_images' => 'sometimes|array', // IDs de imágenes a eliminar
+            'delete_images.*' => 'exists:imagen,id_imagen',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         try {
-            $publicacion->update([
-                'titulo' => $request->titulo,
-                'descripcion' => $request->descripcion,
-                'precio_dia' => $request->precio_dia,
-                'condicion' => $request->condicion,
-                'id_categoria' => $request->id_categoria ? $this->mapCategoryToId($request->id_categoria) : $publicacion->id_categoria
-            ]);
+            DB::beginTransaction();
 
-            return response()->json(['message' => 'Actualizada con éxito']);
+            // Actualizar campos básicos
+            $updateData = $request->only(['titulo', 'descripcion', 'precio_dia', 'condicion', 'id_distrito']);
+            
+            if ($request->has('id_categoria')) {
+                $updateData['id_categoria'] = $this->mapCategoryToId($request->id_categoria);
+            }
+
+            $publicacion->update($updateData);
+
+            // 1. Eliminar imágenes seleccionadas (si se solicitó)
+            if ($request->has('delete_images')) {
+                foreach ($request->delete_images as $imgId) {
+                    $imagen = Imagen::where('id_publicacion', $publicacion->id_publicacion)->find($imgId);
+                    if ($imagen) {
+                        // Opcional: Eliminar de S3 físicamente (si tienes el path)
+                        // Storage::disk('s3')->delete($imagen->url_photo);
+                        $imagen->delete();
+                    }
+                }
+            }
+
+            // 2. Agregar nuevas imágenes a S3
+            if ($request->hasFile('imagenes')) {
+                foreach ($request->file('imagenes') as $index => $file) {
+                    $filename = 'pub_' . $publicacion->id_publicacion . '_' . time() . '_' . $index . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('publicaciones', $filename, 's3');
+                    
+                    Imagen::create([
+                        'url_photo' => $path, 
+                        'id_publicacion' => $publicacion->id_publicacion
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            // Recargar con relaciones para devolver la info actualizada
+            $publicacion->load(['imagenes', 'categoria', 'distrito']);
+
+            return response()->json([
+                'message' => '¡Publicación actualizada con éxito!',
+                'publicacion' => $publicacion
+            ], 200);
+
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Error al actualizar', 'error' => $e->getMessage()], 500);
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al actualizar la publicación',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
