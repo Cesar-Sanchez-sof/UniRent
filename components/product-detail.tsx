@@ -15,7 +15,10 @@ import {
   Tag,
   Info,
   CalendarX2,
-  MessageCircle
+  MessageCircle,
+  DollarSign,
+  FileText,
+  BadgeCheck
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
@@ -43,32 +46,51 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
   const [currentImage, setCurrentImage] = useState(0)
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
 
+  // Verificar si el usuario está logueado
+  const isLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('auth_token')
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true)
       setError(null)
       try {
-        const [productRes, bookedRes, resenasRes] = await Promise.all([
-          fetch(`${API_URL}/publicaciones/${productId}`, { headers: { "Accept": "application/json" } }),
-          fetch(`${API_URL}/publicaciones/${productId}/booked-dates`, { headers: { "Accept": "application/json" } }),
-          fetch(`${API_URL}/publicaciones/${productId}/resenas`, { headers: { "Accept": "application/json" } })
-        ])
+        // 1. Cargamos el producto (Crítico)
+        const productRes = await fetch(`${API_URL}/publicaciones/${productId}`, { 
+          headers: { "Accept": "application/json" } 
+        })
         
-        if (!productRes.ok) throw new Error("No se pudo cargar el producto")
+        if (!productRes.ok) {
+          const errorInfo = await productRes.text();
+          console.error("Error cargando producto:", errorInfo);
+          throw new Error("El artículo no está disponible o no existe.");
+        }
         
         const productData = await productRes.json()
-        const bookedData = await bookedRes.json()
-        const resenasData = resenasRes.ok ? await resenasRes.json() : []
-
         setProduct(productData)
-        setResenas(resenasData)
-        
-        // Convertir strings de fechas a objetos Date (inicio del día) para comparaciones precisas
-        const disabledRanges = bookedData.map((range: any) => ({
-          from: startOfDay(parseISO(range.from)),
-          to: startOfDay(parseISO(range.to))
-        }))
-        setBookedDates(disabledRanges)
+
+        // 2. Cargamos datos secundarios (No críticos - si fallan, seguimos)
+        try {
+          const [bookedRes, resenasRes] = await Promise.all([
+            fetch(`${API_URL}/publicaciones/${productId}/booked-dates`, { headers: { "Accept": "application/json" } }),
+            fetch(`${API_URL}/publicaciones/${productId}/resenas`, { headers: { "Accept": "application/json" } })
+          ])
+
+          if (bookedRes.ok) {
+            const bookedData = await bookedRes.json()
+            const disabledRanges = bookedData.map((range: any) => ({
+              from: startOfDay(parseISO(range.from)),
+              to: startOfDay(parseISO(range.to))
+            }))
+            setBookedDates(disabledRanges)
+          }
+
+          if (resenasRes.ok) {
+            setResenas(await resenasRes.json())
+          }
+        } catch (secondaryErr) {
+          console.warn("Error cargando datos secundarios (fechas o reseñas):", secondaryErr)
+          // No lanzamos error, permitimos que el usuario vea el producto
+        }
 
       } catch (err: any) {
         setError(err.message)
@@ -80,7 +102,6 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
     fetchData()
   }, [productId])
 
-  // Validación de traslape en tiempo real
   const isRangeInvalid = useMemo(() => {
     if (!dateRange?.from) return false
     const checkFrom = startOfDay(dateRange.from)
@@ -92,12 +113,10 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
   }, [dateRange, bookedDates])
 
   const handleRentalRequest = async () => {
-    const token = localStorage.getItem('auth_token')
-    
-    if (!token) {
+    if (!isLoggedIn) {
       toast({ 
         title: "Inicia sesión", 
-        description: "Debes iniciar sesión para separar alquiler.", 
+        description: "Debe iniciar sesión para separar alquiler.", 
         variant: "destructive" 
       })
       window.location.href = "/login"
@@ -107,6 +126,8 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
     if (!dateRange?.from || isRangeInvalid) return
 
     setIsSubmitting(true)
+    const token = localStorage.getItem('auth_token')
+    
     try {
       const fechaInicio = format(dateRange.from, 'yyyy-MM-dd')
       const fechaFin = dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : fechaInicio
@@ -145,9 +166,9 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
   if (isLoading) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm">
-        <div className="bg-card p-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
+        <div className="bg-card p-8 rounded-[2rem] shadow-2xl flex flex-col items-center gap-4">
           <Loader2 className="h-10 w-10 text-primary animate-spin" />
-          <p className="font-medium text-muted-foreground italic text-sm">Cargando disponibilidad...</p>
+          <p className="font-bold text-muted-foreground animate-pulse text-sm">Validando disponibilidad...</p>
         </div>
       </div>
     )
@@ -155,14 +176,14 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
 
   if (error || !product) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm">
-        <div className="bg-card p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border border-border">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/40 backdrop-blur-sm p-4">
+        <div className="bg-card p-8 rounded-[2rem] shadow-2xl max-w-sm w-full text-center border border-border">
           <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="h-8 w-8 text-destructive" />
           </div>
-          <h3 className="text-lg font-bold text-foreground mb-2">Error de Carga</h3>
-          <p className="text-muted-foreground text-sm mb-6">{error || "No se pudo encontrar la información del producto."}</p>
-          <Button onClick={onClose} variant="default" className="w-full rounded-xl h-12 font-bold shadow-lg">Cerrar</Button>
+          <h3 className="text-xl font-black text-foreground mb-2">Error de Carga</h3>
+          <p className="text-muted-foreground text-sm mb-6 font-medium leading-relaxed">{error || "No se pudo encontrar la información del producto."}</p>
+          <Button onClick={onClose} className="w-full rounded-2xl h-12 font-black bg-primary text-white shadow-lg">Cerrar Ventana</Button>
         </div>
       </div>
     )
@@ -174,108 +195,174 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
   const subtotal = pricePerDay * totalDays
   const total = subtotal + deposit
 
-  const images = product.imagenes?.length > 0 ? product.imagenes.map((img: any) => img.url_photo) : ["/placeholder.jpg"]
-  const isLoggedIn = typeof window !== 'undefined' && !!localStorage.getItem('auth_token')
+  // Función para normalizar URLs de imágenes (S3/Supabase vs Local)
+  const getImageUrl = (url: string) => {
+    if (!url) return "/placeholder.jpg"
+    if (url.startsWith('http')) return url
+    return `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/storage/${url}`
+  }
+
+  const images = product.imagenes?.length > 0 
+    ? product.imagenes.map((img: any) => getImageUrl(img.url_photo)) 
+    : ["/placeholder.jpg"]
 
   return (
     <div className="fixed inset-0 z-50 flex items-end lg:items-center justify-center" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
-      <div className="relative bg-card w-full max-w-5xl max-h-[95vh] lg:max-h-[92vh] rounded-t-[2.5rem] lg:rounded-[2.5rem] overflow-hidden shadow-2xl border-t lg:border border-border">
-        <button onClick={onClose} className="absolute top-6 right-6 z-20 h-10 w-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center shadow-xl border border-border/50 transition-all hover:bg-card hover:scale-110"><X className="h-5 w-5" /></button>
+      <div className="absolute inset-0 bg-foreground/60 backdrop-blur-md" onClick={onClose} aria-hidden="true" />
+      
+      <div className="relative bg-card w-full max-w-6xl max-h-[95vh] lg:max-h-[92vh] rounded-t-[3rem] lg:rounded-[3rem] overflow-hidden shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] border-t lg:border border-border/50 animate-in slide-in-from-bottom duration-500">
+        
+        <button onClick={onClose} className="absolute top-6 right-6 z-30 h-12 w-12 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center shadow-xl border border-border/50 transition-all hover:bg-white hover:scale-110 active:scale-95 group">
+          <X className="h-5 w-5 text-foreground transition-transform group-hover:rotate-90" />
+        </button>
+
         <div className="h-full overflow-y-auto lg:grid lg:grid-cols-[1.2fr,1fr]">
-          <div className="flex flex-col border-r border-border/50">
-            <div className="relative aspect-[4/3] bg-muted">
-              <Image src={images[currentImage]} alt={product.titulo} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 40vw" priority />
+          {/* Columna Izquierda: Galería e Información */}
+          <div className="flex flex-col border-r border-border/50 bg-white">
+            <div className="relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-auto lg:h-[500px] bg-secondary/20">
+              <Image 
+                src={images[currentImage]} 
+                alt={product.titulo} 
+                fill 
+                className="object-cover transition-all duration-700 ease-in-out" 
+                sizes="(max-width: 1024px) 100vw, 50vw" 
+                priority 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+              
               {images.length > 1 && (
-                <>
-                  <button onClick={() => setCurrentImage((prev) => (prev - 1 + images.length) % images.length)} className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/80 flex items-center justify-center shadow-md hover:bg-card"><ChevronLeft className="h-5 w-5" /></button>
-                  <button onClick={() => setCurrentImage((prev) => (prev + 1) % images.length)} className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/80 flex items-center justify-center shadow-md hover:bg-card"><ChevronRight className="h-5 w-5" /></button>
-                </>
+                <div className="absolute inset-x-4 top-1/2 -translate-y-1/2 flex justify-between items-center pointer-events-none">
+                  <button onClick={(e) => { e.stopPropagation(); setCurrentImage((prev) => (prev - 1 + images.length) % images.length) }} className="h-12 w-12 rounded-2xl bg-white/90 backdrop-blur-sm shadow-xl flex items-center justify-center pointer-events-auto hover:bg-white hover:scale-110 active:scale-90 transition-all border border-border/20"><ChevronLeft className="h-6 w-6" /></button>
+                  <button onClick={(e) => { e.stopPropagation(); setCurrentImage((prev) => (prev + 1) % images.length) }} className="h-12 w-12 rounded-2xl bg-white/90 backdrop-blur-sm shadow-xl flex items-center justify-center pointer-events-auto hover:bg-white hover:scale-110 active:scale-90 transition-all border border-border/20"><ChevronRight className="h-6 w-6" /></button>
+                </div>
               )}
-            </div>
-            <div className="p-6 lg:p-8">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase"><Tag className="h-3 w-3" /> {product.categoria?.nombre || "General"}</span>
-                <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-xs font-bold">Condición: {product.condicion || "Usado"}</span>
+
+              {/* Indicador de imágenes */}
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 px-3 py-2 rounded-2xl bg-black/20 backdrop-blur-md border border-white/20">
+                {images.map((_, i) => (
+                  <div key={i} className={cn("h-1.5 rounded-full transition-all duration-300", i === currentImage ? "w-6 bg-white" : "w-1.5 bg-white/50")} />
+                ))}
               </div>
-              <h2 className="text-2xl lg:text-3xl font-bold mb-4">{product.titulo}</h2>
-              <div className="flex items-center gap-6 mb-8 p-4 bg-secondary/30 rounded-2xl border border-border/50">
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Dueño</span>
-                  <div className="flex items-center gap-2">
-                    <div className="relative h-9 w-9 rounded-full overflow-hidden bg-primary/20 flex items-center justify-center text-primary font-bold text-xs border border-primary/30">
-                      {product.usuario?.foto_perfil ? <Image src={product.usuario.foto_perfil} alt={product.usuario.primer_nombre} fill className="object-cover" /> : product.usuario?.primer_nombre?.[0] || "U"}
+            </div>
+
+            <div className="p-8 lg:p-12 space-y-10">
+              <div>
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  <span className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-primary/10"><Tag className="h-3 w-3" /> {product.categoria?.nombre || "General"}</span>
+                  <span className="bg-secondary/50 text-secondary-foreground px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-border/50">Estado: {product.condicion || "Usado"}</span>
+                </div>
+                <h2 className="text-3xl lg:text-5xl font-black tracking-tighter text-foreground mb-6 leading-[0.9]">{product.titulo}</h2>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+                  <div className="bg-secondary/20 p-4 rounded-3xl border border-border/30 flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl overflow-hidden bg-primary/10 flex items-center justify-center border-2 border-white shadow-sm shrink-0">
+                      {product.usuario?.foto_perfil ? <img src={getImageUrl(product.usuario.foto_perfil)} alt="User" className="w-full h-full object-cover" /> : <span className="font-black text-primary">{product.usuario?.primer_nombre?.[0]}</span>}
                     </div>
-                    <div><p className="text-sm font-bold leading-none">{product.usuario?.primer_nombre} {product.usuario?.primer_apellido}</p><p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{product.usuario?.universidad?.nombre_corto || "Estudiante"}</p></div>
+                    <div>
+                      <p className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Dueño</p>
+                      <p className="text-sm font-bold leading-tight">{product.usuario?.primer_nombre}</p>
+                    </div>
+                  </div>
+                  <div className="bg-secondary/20 p-4 rounded-3xl border border-border/30 flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-amber-100 flex items-center justify-center border-2 border-white shadow-sm shrink-0 text-amber-600">
+                      <Star className="h-6 w-6 fill-current" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Confianza</p>
+                      <p className="text-sm font-bold leading-tight">{product.usuario?.puntaje_dueno || "5.0"}</p>
+                    </div>
+                  </div>
+                  <div className="bg-secondary/20 p-4 rounded-3xl border border-border/30 flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-2xl bg-blue-100 flex items-center justify-center border-2 border-white shadow-sm shrink-0 text-blue-600">
+                      <MapPin className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase font-black text-muted-foreground tracking-tighter">Ubicación</p>
+                      <p className="text-sm font-bold leading-tight truncate max-w-[100px]">{product.distrito?.nombre || "Lima"}</p>
+                    </div>
                   </div>
                 </div>
-                <div className="h-8 w-px bg-border/60" /><div className="flex flex-col"><span className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Confianza</span><div className="flex items-center gap-1 text-foreground font-bold"><Star className="h-4 w-4 fill-primary text-primary" />{product.usuario?.puntaje_dueno || "5.0"}</div></div>
-                <div className="h-8 w-px bg-border/60" /><div className="flex flex-col"><span className="text-[10px] uppercase font-bold text-muted-foreground mb-1">Ubicación</span><div className="flex items-center gap-1 text-foreground font-bold font-sm"><MapPin className="h-4 w-4 text-accent" /> <span className="truncate max-w-[80px]">{product.distrito?.nombre || "Lima"}</span></div></div>
-              </div>
-              <p className="text-muted-foreground leading-relaxed whitespace-pre-line text-base mb-8">{product.descripcion}</p>
 
-              <div className="border-t border-border/50 pt-8 mt-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-black uppercase tracking-tighter flex items-center gap-2">
-                    <Star className="h-5 w-5 fill-primary text-primary" /> Reseñas ({resenas.length})
+                <div className="space-y-4">
+                  <h3 className="text-xs uppercase font-black tracking-widest text-muted-foreground flex items-center gap-2">
+                    <FileText className="h-4 w-4" /> Descripción del artículo
                   </h3>
-                  {resenas.length > 0 && (
-                    <div className="text-sm font-bold bg-primary/10 text-primary px-3 py-1 rounded-full">
-                      Promedio: {(resenas.reduce((acc, r) => acc + Number(r.calificacion), 0) / resenas.length).toFixed(1)}
-                    </div>
-                  )}
+                  <p className="text-muted-foreground leading-relaxed text-base font-medium bg-secondary/10 p-6 rounded-[2rem] border border-border/20 italic">
+                    "{product.descripcion}"
+                  </p>
+                </div>
+              </div>
+
+              <div className="border-t border-border/50 pt-10">
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2">
+                    <Star className="h-6 w-6 fill-primary text-primary" /> Reseñas ({resenas.length})
+                  </h3>
                 </div>
 
                 {resenas.length > 0 ? (
-                  <div className="space-y-6">
+                  <div className="grid grid-cols-1 gap-6">
                     {resenas.map((resena: any) => (
-                      <div key={resena.id_resena} className="bg-secondary/20 p-5 rounded-2xl border border-border/30 transition-all hover:bg-secondary/30 shadow-sm">
-                        <div className="flex justify-between items-start mb-3">
+                      <div key={resena.id_resena} className="bg-white p-6 rounded-[2rem] border border-border/50 shadow-sm hover:shadow-md transition-all">
+                        <div className="flex justify-between items-start mb-4">
                           <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary overflow-hidden border border-primary/20">
-                              {resena.alquiler?.usuario?.foto_perfil ? (
-                                <img src={resena.alquiler.usuario.foto_perfil} alt="User" className="w-full h-full object-cover" />
-                              ) : (
-                                <span>{resena.alquiler?.usuario?.primer_nombre?.[0] || "U"}</span>
-                              )}
+                            <div className="h-10 w-10 rounded-xl bg-secondary flex items-center justify-center font-black text-primary overflow-hidden border border-border/20">
+                              {resena.alquiler?.usuario?.foto_perfil ? <img src={getImageUrl(resena.alquiler.usuario.foto_perfil)} alt="U" className="w-full h-full object-cover" /> : <span>{resena.alquiler?.usuario?.primer_nombre?.[0]}</span>}
                             </div>
                             <div>
-                              <p className="text-sm font-black">{resena.alquiler?.usuario?.primer_nombre} {resena.alquiler?.usuario?.primer_apellido}</p>
-                              <div className="flex gap-0.5 mt-0.5">
+                              <p className="text-sm font-black">{resena.alquiler?.usuario?.primer_nombre}</p>
+                              <div className="flex gap-0.5">
                                 {[1, 2, 3, 4, 5].map((s) => (
-                                  <Star key={s} className={cn("h-3 w-3", s <= Number(resena.calificacion) ? "fill-primary text-primary" : "text-muted-foreground/30")} />
+                                  <Star key={s} className={cn("h-2.5 w-2.5", s <= Number(resena.calificacion) ? "fill-primary text-primary" : "text-muted-foreground/20")} />
                                 ))}
                               </div>
                             </div>
                           </div>
-                          <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest bg-white/50 px-2.5 py-1.5 rounded-xl border border-border/20 shadow-sm">
+                          <span className="text-[9px] font-black text-muted-foreground/60 uppercase tracking-widest bg-secondary/50 px-3 py-1 rounded-full border border-border/20">
                             {format(new Date(resena.alquiler?.fecha_devolucion), "MMM yyyy", { locale: es })}
                           </span>
                         </div>
-                        <div className="relative">
-                          <p className="text-sm text-muted-foreground font-medium italic leading-relaxed pl-4 border-l-2 border-primary/20">
-                            "{resena.comentario}"
-                          </p>
-                        </div>
+                        <p className="text-sm text-muted-foreground font-medium italic leading-relaxed pl-4 border-l-2 border-primary/30">
+                          "{resena.comentario}"
+                        </p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 bg-secondary/10 rounded-3xl border-2 border-dashed border-border/50">
-                    <Star className="h-10 w-10 text-muted-foreground/20 mx-auto mb-3" />
-                    <p className="text-muted-foreground font-bold text-sm">Aún no hay reseñas para este artículo.</p>
-                    <p className="text-[10px] text-muted-foreground/60 uppercase font-black mt-2 tracking-widest bg-white/50 inline-block px-3 py-1 rounded-full border border-border/50">¡Sé el primero en alquilarlo!</p>
+                  <div className="text-center py-16 bg-secondary/10 rounded-[2.5rem] border-2 border-dashed border-border/50">
+                    <Star className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
+                    <p className="text-muted-foreground font-black text-sm uppercase tracking-widest">Sin reseñas aún</p>
+                    <p className="text-[10px] text-muted-foreground/60 font-bold mt-2">¡Sé el primero en probar este artículo!</p>
                   </div>
                 )}
               </div>
             </div>
           </div>
-          <div className="p-6 lg:p-8 bg-secondary/10 flex flex-col gap-6 lg:sticky lg:top-0">
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-              <div className="flex items-end justify-between mb-6"><div><span className="text-3xl font-black">S/ {formatPrice(pricePerDay)}</span><span className="text-muted-foreground font-medium text-sm"> / día</span></div>{product.estado && <div className="flex items-center gap-1 bg-accent/10 text-accent px-2.5 py-1 rounded-lg border border-accent/20"><ShieldCheck className="h-4 w-4" /><span className="text-xs font-bold uppercase">Verificado</span></div>}</div>
-              <div className="space-y-4 mb-6">
-                <h3 className="text-sm font-bold flex items-center gap-2 uppercase tracking-tighter"><CalendarIcon className="h-4 w-4 text-primary" /> Fechas del Alquiler</h3>
-                <div className="border border-border rounded-xl p-1 bg-card overflow-hidden">
+
+          {/* Columna Derecha: Alquiler (Sticky) */}
+          <div className="p-8 lg:p-12 bg-secondary/10 flex flex-col gap-8 lg:sticky lg:top-0">
+            <div className="bg-white border border-border shadow-[0_20px_50px_rgba(0,0,0,0.05)] rounded-[2.5rem] p-8 space-y-8 animate-in zoom-in-95 duration-500 delay-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-4xl font-black tracking-tighter text-foreground">S/ {formatPrice(pricePerDay)}</span>
+                  <span className="text-muted-foreground font-bold text-xs uppercase tracking-widest ml-2">/ día</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1.5 rounded-xl border border-green-100">
+                  <ShieldCheck className="h-4 w-4" />
+                  <span className="text-[10px] font-black uppercase tracking-wider">Garantizado</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                    <CalendarIcon className="h-3.5 w-3.5 text-primary" /> Fechas disponibles
+                  </h3>
+                  {dateRange?.from && (
+                    <button onClick={() => setDateRange(undefined)} className="text-[9px] font-black uppercase text-primary hover:underline transition-all">Limpiar</button>
+                  )}
+                </div>
+                <div className="border border-border/50 rounded-[2rem] p-4 bg-card shadow-inner overflow-hidden">
                   <Calendar
                     mode="range"
                     selected={dateRange}
@@ -286,52 +373,85 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
                       ...bookedDates
                     ]}
                     className="w-full"
-                    classNames={{ month: "space-y-4 w-full", table: "w-full border-collapse space-y-1", head_cell: "text-muted-foreground rounded-md w-full font-bold text-[0.7rem] uppercase", row: "flex w-full mt-2" }}
+                    classNames={{
+                      month: "space-y-4 w-full",
+                      table: "w-full border-collapse space-y-1",
+                      head_cell: "text-muted-foreground rounded-md w-full font-black text-[0.6rem] uppercase tracking-tighter",
+                      row: "flex w-full mt-2",
+                      day_selected: "bg-primary text-primary-foreground font-black rounded-xl",
+                      day_today: "bg-secondary text-foreground font-black rounded-xl",
+                      day: "h-9 w-full text-center text-xs p-0 font-medium hover:bg-primary/10 transition-all rounded-xl",
+                      day_disabled: "text-muted-foreground/30 opacity-50 cursor-not-allowed line-through"
+                    }}
                   />
                 </div>
               </div>
 
               {isRangeInvalid ? (
-                <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl flex flex-col items-center gap-2 text-center">
-                  <CalendarX2 className="h-8 w-8 text-destructive mb-1" />
-                  <h4 className="font-bold text-destructive text-sm">Rango no disponible</h4>
-                  <p className="text-[11px] text-destructive-foreground">Tu selección incluye días que ya han sido reservados por otro usuario. Por favor, elige un periodo libre.</p>
+                <div className="p-6 bg-destructive/5 border-2 border-destructive/20 rounded-[2rem] flex flex-col items-center gap-3 text-center animate-in fade-in zoom-in">
+                  <CalendarX2 className="h-10 w-10 text-destructive opacity-80" />
+                  <div className="space-y-1">
+                    <h4 className="font-black text-destructive text-sm uppercase tracking-tighter">Rango no disponible</h4>
+                    <p className="text-[10px] text-destructive/70 font-bold leading-tight">Esas fechas ya están reservadas. Por favor selecciona otro periodo.</p>
+                  </div>
                 </div>
               ) : (
-                <div className="space-y-3 p-4 bg-muted/50 rounded-xl border border-border/50">
-                  <h3 className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-2">Desglose de costos</h3>
-                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground">S/ {formatPrice(pricePerDay)} x {totalDays} {totalDays === 1 ? "día" : "días"}</span><span className="text-foreground font-bold">S/ {formatPrice(subtotal)}</span></div>
-                  <div className="flex items-center justify-between text-sm"><span className="text-muted-foreground text-xs italic underline decoration-dotted">Garantía 100% Reembolsable (1 día)</span><span className="text-foreground font-bold">S/ {formatPrice(deposit)}</span></div>
-                  <div className="border-t border-border pt-3 mt-1 flex items-center justify-between"><span className="font-black uppercase text-[10px] tracking-widest">Total Alquiler</span><span className="font-black text-xl text-primary font-mono tracking-tighter">S/ {formatPrice(total)}</span></div>
+                <div className="space-y-4 p-6 bg-secondary/30 rounded-[2rem] border border-border/50 transition-all">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-muted-foreground uppercase tracking-widest">Subtotal ({totalDays} d)</span>
+                    <span className="text-foreground">S/ {formatPrice(subtotal)}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <div className="flex items-center gap-1 text-muted-foreground group">
+                      <span className="uppercase tracking-widest">Garantía</span>
+                      <Info className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity cursor-help" />
+                    </div>
+                    <span className="text-foreground">S/ {formatPrice(deposit)}</span>
+                  </div>
+                  <div className="h-px bg-border/50 w-full" />
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="font-black uppercase text-[10px] tracking-[0.2em] text-primary">Total a pagar</span>
+                    <span className="font-black text-3xl text-foreground tracking-tighter">S/ {formatPrice(total)}</span>
+                  </div>
                 </div>
               )}
 
-              <div className="mt-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 flex gap-2.5 items-start"><AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" /><p className="text-[10px] leading-snug text-destructive-foreground font-medium"><strong>Importante:</strong> En caso de daños o faltantes, el reembolso de la garantía no será procesado.</p></div>
-              
-              <div className="grid grid-cols-1 gap-2 mt-4">
+              <div className="space-y-3">
                 <Button 
                   onClick={handleRentalRequest} 
-                  disabled={!dateRange?.from || isRangeInvalid || isSubmitting} 
+                  disabled={isLoggedIn && (!dateRange?.from || isRangeInvalid || isSubmitting)} 
                   className={cn(
-                    "w-full rounded-xl h-14 text-base font-bold shadow-lg transition-all",
-                    isRangeInvalid ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground hover:shadow-xl hover:-translate-y-0.5"
+                    "w-full rounded-2xl h-16 text-base font-black uppercase tracking-widest shadow-2xl transition-all duration-300",
+                    isRangeInvalid ? "bg-muted text-muted-foreground" : 
+                    !isLoggedIn ? "bg-[#1e5d8c] hover:bg-[#164a6d] text-white animate-pulse" :
+                    "bg-primary text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1 active:translate-y-0"
                   )}
                 >
-                  {isSubmitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Procesando...</> : isRangeInvalid ? "Periodo no disponible" : "Solicitar Alquiler"}
+                  {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin" /> : 
+                   !isLoggedIn ? "Inicia sesión para alquilar" : 
+                   isRangeInvalid ? "No disponible" : "Confirmar Alquiler"}
                 </Button>
 
                 {product.usuario?.telefono && (
                   <Button
                     variant="outline"
                     onClick={() => window.open(`https://wa.me/51${product.usuario.telefono}?text=Hola ${product.usuario.primer_nombre}, tengo una consulta sobre tu publicación: ${product.titulo}`, '_blank')}
-                    className="w-full rounded-xl h-12 text-sm font-bold border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800 transition-all gap-2"
+                    className="w-full rounded-2xl h-12 text-[10px] font-black uppercase tracking-[0.2em] border-2 border-green-100 text-green-600 hover:bg-green-50 hover:border-green-200 transition-all gap-2"
                   >
-                    <MessageCircle className="h-5 w-5" /> Consultar al dueño
+                    <MessageCircle className="h-4 w-4" /> Consultar al dueño
                   </Button>
                 )}
               </div>
+
+              <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 flex items-center gap-4 group">
+                <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform">
+                  <BadgeCheck className="h-6 w-6" />
+                </div>
+                <p className="text-[10px] leading-tight text-primary font-black uppercase tracking-tighter">
+                  Alquiler Protegido: <span className="text-muted-foreground font-bold normal-case tracking-normal">NexUs retiene el pago hasta que valides el estado del artículo.</span>
+                </p>
+              </div>
             </div>
-            <div className="flex items-center gap-4 p-4 border border-accent/20 bg-accent/5 rounded-2xl"><ShieldCheck className="h-6 w-6 text-accent shrink-0" /><p className="text-xs text-accent-foreground leading-snug"><strong>Alquiler Protegido:</strong> Tu dinero está seguro con NexUs hasta recibir y validar el artículo.</p></div>
           </div>
         </div>
       </div>
