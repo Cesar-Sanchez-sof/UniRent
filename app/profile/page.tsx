@@ -586,7 +586,7 @@ function ProfileContent() {
                                 <span className="text-[10px] uppercase font-bold text-muted-foreground">Ingreso Estimado (Neto)</span>
                                 <p className="text-sm font-black text-primary">
                                   S/ {formatPrice(
-                                    (Number(req.publicacion?.precio_dia) - Number(req.publicacion?.deposito || 0)) *
+                                    (Number(req.publicacion?.precio_dia) * 0.7) *
                                     (differenceInDays(new Date(req.fecha_devolucion), new Date(req.fecha_alquiler)) + 1)
                                   )}
                                 </p>

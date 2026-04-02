@@ -70,8 +70,9 @@ class AlquilerController extends Controller
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
 
-            // Lógica de Deuda (30% comisión)
-            $comision = $alquiler->monto_total * 0.30;
+            // Lógica de Deuda (30% comisión sobre el subtotal de días, excluyendo garantía)
+            $subtotal = $alquiler->monto_total - $alquiler->monto_seguro;
+            $comision = $subtotal * 0.30;
             $dueno = $alquiler->publicacion->usuario;
 
             // CASO 1: Se ACEPTA la solicitud (Pendiente -> Activo)
