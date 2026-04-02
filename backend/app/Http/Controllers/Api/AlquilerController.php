@@ -35,12 +35,20 @@ class AlquilerController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $user = $request->user();
-        $alquiler = Alquiler::whereHas('publicacion', function ($q) use ($user) {
-            $q->where('id_usuario', $user->id_usuario);
-        })->find($id);
+        
+        // Buscamos el alquiler. Puede ser el dueño del producto o el cliente quien solicita el cambio.
+        $alquiler = Alquiler::with(['publicacion.usuario', 'usuario'])->find($id);
 
         if (!$alquiler) {
             return response()->json(['message' => 'Solicitud no encontrada'], 404);
+        }
+
+        // Determinar roles
+        $esDueno = $alquiler->publicacion->id_usuario === $user->id_usuario;
+        $esCliente = $alquiler->id_usuario_cliente === $user->id_usuario;
+
+        if (!$esDueno && !$esCliente) {
+            return response()->json(['message' => 'No tienes permisos para esta acción'], 403);
         }
 
         $validator = Validator::make($request->all(), [
@@ -51,18 +59,68 @@ class AlquilerController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $alquiler->update(['estado' => $request->estado]);
+        $nuevoEstado = $request->estado;
+        $estadoAnterior = $alquiler->estado;
 
-        // Notificar al cliente sobre el cambio de estado
-        \App\Models\Notificacion::create([
-            'id_usuario' => $alquiler->id_usuario_cliente,
-            'id_alquiler' => $alquiler->id_alquiler,
-            'titulo' => 'Actualización de Alquiler',
-            'mensaje' => "Tu solicitud para '{$alquiler->publicacion->titulo}' ha sido marcada como: {$request->estado}.",
-            'leido' => false
-        ]);
+        // Evitar procesar si el estado es el mismo
+        if ($nuevoEstado === $estadoAnterior) {
+            return response()->json(['message' => "La solicitud ya está en estado {$nuevoEstado}"]);
+        }
 
-        return response()->json(['message' => "Solicitud actualizada a {$request->estado}"]);
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            // Lógica de Deuda (30% comisión)
+            $comision = $alquiler->monto_total * 0.30;
+            $dueno = $alquiler->publicacion->usuario;
+
+            // CASO 1: Se ACEPTA la solicitud (Pendiente -> Activo)
+            if ($estadoAnterior === 'Pendiente' && $nuevoEstado === 'Activo') {
+                if (!$esDueno) {
+                    throw new \Exception("Solo el dueño puede aceptar la solicitud.");
+                }
+                // Sumar deuda al dueño
+                $dueno->increment('deuda', $comision);
+            }
+
+            // CASO 2: Se CANCELA la solicitud (Activo -> Cancelado)
+            if ($estadoAnterior === 'Activo' && $nuevoEstado === 'Cancelado') {
+                if ($esCliente) {
+                    // Si el CLIENTE cancela, se le quita la deuda al dueño (sin penalización para el dueño)
+                    $dueno->decrement('deuda', $comision);
+                }
+                // Si el DUÑO cancela, NO se decrementa (se queda como penalización)
+            }
+
+            // Actualizar el estado
+            $alquiler->update(['estado' => $nuevoEstado]);
+
+            // Notificaciones
+            $targetUserId = ($esDueno) ? $alquiler->id_usuario_cliente : $alquiler->publicacion->id_usuario;
+            $targetRole = ($esDueno) ? "dueño" : "cliente";
+
+            \App\Models\Notificacion::create([
+                'id_usuario' => $targetUserId,
+                'id_alquiler' => $alquiler->id_alquiler,
+                'titulo' => 'Actualización de Alquiler',
+                'mensaje' => "El {$targetRole} ha marcado '{$alquiler->publicacion->titulo}' como: {$nuevoEstado}.",
+                'leido' => false
+            ]);
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'message' => "Solicitud actualizada a {$nuevoEstado}",
+                'deuda_actualizada' => $esDueno || $esCliente ? $dueno->deuda : null
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'message' => 'Error al actualizar el estado',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
