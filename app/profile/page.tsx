@@ -8,7 +8,7 @@ import { ProductCard } from "@/components/product-card"
 import {
   User, Settings, Star, CreditCard, GraduationCap, Phone, Mail, Save, Loader2,
   BadgeCheck, AlertCircle, Camera, AtSign, Package, History, Plus, X, Check, Lock, Eye, EyeOff, Edit2, Trash2, Calendar, MapPin, Inbox, CheckCircle2, XCircle,
-  MessageCircle
+  MessageCircle, Tag, DollarSign, FileText
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,6 +27,21 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog"
+import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+const conditions = [
+  { id: "new", label: "Nuevo", desc: "Sin usar o con empaque original" },
+  { id: "like-new", label: "Como nuevo", desc: "Usado pocas veces, excelente estado" },
+  { id: "good", label: "Buen estado", desc: "Uso normal, funciona perfectamente" },
+  { id: "fair", label: "Aceptable", desc: "Marcas de uso pero completamente funcional" },
+]
 
 type TabType = 'config' | 'publications' | 'rentals' | 'incoming';
 
@@ -129,8 +144,6 @@ function ProfileContent() {
           telefono: parsedUser.telefono || ""
         })
 
-        // Si ya tenemos datos locales, podemos quitar el loader principal
-        // y dejar que la API actualice en segundo plano
         setIsLoading(false)
       } catch (e) {
         console.error("Error parsing stored user:", e)
@@ -159,7 +172,6 @@ function ProfileContent() {
           if (data.foto_perfil) {
             setPreviewUrl(data.foto_perfil)
           }
-          // Actualizamos localStorage con los datos más frescos
           localStorage.setItem('user', JSON.stringify(data))
         }
       } catch (e) {
@@ -267,7 +279,10 @@ function ProfileContent() {
   }
 
   const handleEditClick = (pub: any) => {
-    setEditingPub({ ...pub }); 
+    setEditingPub({ 
+      ...pub,
+      estado: pub.estado === 1 || pub.estado === true || pub.estado === "1"
+    }); 
     setNewImages([]);
     setDeleteImageIds([]);
     setShowEditModal(true);
@@ -276,7 +291,6 @@ function ProfileContent() {
   const handleUpdatePublication = async (e: React.FormEvent) => {
     e.preventDefault(); 
     setIsUpdatingPub(true);
-    
     const token = localStorage.getItem('auth_token');
     
     try {
@@ -284,6 +298,8 @@ function ProfileContent() {
       formData.append('titulo', editingPub.titulo);
       formData.append('precio_dia', editingPub.precio_dia);
       formData.append('descripcion', editingPub.descripcion);
+      formData.append('condicion', editingPub.condicion);
+      formData.append('estado', editingPub.estado ? "1" : "0");
       
       // Agregar nuevas imágenes
       newImages.forEach((img, index) => {
@@ -296,7 +312,7 @@ function ProfileContent() {
       });
 
       const response = await fetch(`${API_URL}/publicaciones/${editingPub.id_publicacion}`, {
-        method: "POST", // El backend acepta POST para actualización con FormData
+        method: "POST", 
         headers: { 
           "Authorization": `Bearer ${token}`, 
           "Accept": "application/json"
@@ -310,7 +326,7 @@ function ProfileContent() {
         fetchMyPublications(); 
       } else {
         const errorData = await response.json();
-        toast({ variant: "destructive", title: "Error al actualizar", description: errorData.message });
+        toast({ variant: "destructive", title: "Error", description: errorData.message || "No se pudo actualizar" });
       }
     } catch (error) {
       toast({ variant: "destructive", title: "Error de conexión" });
@@ -361,7 +377,6 @@ function ProfileContent() {
         setUser((prev: any) => ({ ...prev, foto_perfil: data.foto_url }))
         setPreviewUrl(data.foto_url)
         setShowPhotoModal(false); toast({ title: "Foto actualizada" })
-        // Dispatch event for other components
         window.dispatchEvent(new CustomEvent('user-photo-updated', { detail: data.foto_url }))
       }
     } finally { setIsUploadingPhoto(false) }
@@ -633,53 +648,32 @@ function ProfileContent() {
 
       {/* Modales */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="rounded-2xl max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Editar Publicación</DialogTitle>
-            <DialogDescription>Actualiza los detalles y fotos de tu artículo.</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="rounded-[2rem] max-w-3xl max-h-[92vh] overflow-y-auto p-0 border-none shadow-2xl">
+          <div className="sticky top-0 bg-white/80 backdrop-blur-md z-40 px-8 py-6 border-b border-border/50 flex justify-between items-center">
+            <div>
+              <DialogTitle className="text-2xl font-black text-foreground flex items-center gap-2">
+                <Edit2 className="h-6 w-6 text-primary" /> Editar Publicación
+              </DialogTitle>
+              <DialogDescription className="text-muted-foreground font-medium">Actualiza los detalles de tu artículo</DialogDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setShowEditModal(false)} className="rounded-full hover:bg-secondary/80">
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
           
           {editingPub && (
-            <form onSubmit={handleUpdatePublication} className="space-y-6 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs uppercase font-bold text-muted-foreground">Título</Label>
-                    <Input 
-                      value={editingPub.titulo} 
-                      onChange={e => setEditingPub({ ...editingPub, titulo: e.target.value })} 
-                      className="rounded-xl h-11" 
-                    />
-                  </div>
-                  
-                  <div className="space-y-1.5">
-                    <Label className="text-xs uppercase font-bold text-muted-foreground">Precio por día (S/)</Label>
-                    <Input 
-                      type="number" 
-                      value={editingPub.precio_dia} 
-                      onChange={e => setEditingPub({ ...editingPub, precio_dia: e.target.value })} 
-                      className="rounded-xl h-11" 
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs uppercase font-bold text-muted-foreground">Descripción</Label>
-                    <textarea 
-                      value={editingPub.descripcion} 
-                      onChange={e => setEditingPub({ ...editingPub, descripcion: e.target.value })} 
-                      className="w-full min-h-[120px] p-4 border rounded-2xl bg-secondary/10 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none" 
-                    />
-                  </div>
+            <form onSubmit={handleUpdatePublication} className="p-8 space-y-8">
+              {/* Sección de Fotos */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-primary">
+                  <Camera className="h-4 w-4" />
+                  <Label className="text-xs uppercase tracking-[0.2em] font-black">Fotos del artículo</Label>
                 </div>
-
-                <div className="space-y-4">
-                  <Label className="text-xs uppercase font-bold text-muted-foreground">Fotos del artículo</Label>
-                  
-                  {/* Imágenes actuales */}
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    {editingPub.imagenes?.map((img: any) => (
-                      <div key={img.id_imagen} className="relative aspect-square rounded-lg overflow-hidden border border-border group">
-                        <img src={img.url_photo} className={cn("object-cover w-full h-full transition-opacity", deleteImageIds.includes(img.id_imagen) && "opacity-20")} />
+                <div className="bg-secondary/30 rounded-[1.5rem] p-4 border border-dashed border-border/50">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-3 mb-4">
+                    {editingPub.imagenes?.map((img: any, i: number) => (
+                      <div key={img.id_imagen} className="relative aspect-square rounded-2xl overflow-hidden border-2 border-white shadow-sm group">
+                        <img src={img.url_photo} className={cn("object-cover w-full h-full transition-all", deleteImageIds.includes(img.id_imagen) && "opacity-20 grayscale")} />
                         <button 
                           type="button"
                           onClick={() => {
@@ -699,21 +693,154 @@ function ProfileContent() {
                       </div>
                     ))}
                   </div>
+                  <MultiImageUpload 
+                    images={newImages} 
+                    onChange={setNewImages} 
+                    maxImages={8 - (editingPub.imagenes?.length || 0) + deleteImageIds.length} 
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-3 text-center font-medium italic">
+                    Puedes tener hasta 8 fotos en total. Haz clic en una foto actual para eliminarla.
+                  </p>
+                </div>
+              </div>
 
-                  {/* Nuevas imágenes */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Columna Izquierda: Información Principal */}
+                <div className="space-y-6">
                   <div className="space-y-2">
-                    <Label className="text-[10px] text-muted-foreground">Agregar nuevas fotos</Label>
-                    <MultiImageUpload images={newImages} onChange={setNewImages} maxImages={8 - (editingPub.imagenes?.length || 0) + deleteImageIds.length} />
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-muted-foreground ml-1">Título del Anuncio</Label>
+                    <div className="relative group">
+                      <Tag className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <Input 
+                        value={editingPub.titulo} 
+                        onChange={e => setEditingPub({...editingPub, titulo: e.target.value})} 
+                        className="rounded-2xl h-14 pl-11 bg-secondary/20 border-transparent focus:bg-white focus:border-primary/30 transition-all font-medium" 
+                        placeholder="Ej: Laptop Gamer Nitro 5"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-muted-foreground ml-1">Estado del artículo</Label>
+                    <Select value={editingPub.condicion} onValueChange={(v) => setEditingPub({...editingPub, condicion: v})}>
+                      <SelectTrigger className="h-14 rounded-2xl bg-secondary/20 border-transparent focus:bg-white focus:border-primary/30 transition-all font-medium">
+                        <SelectValue placeholder="¿En qué estado está?" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl border-none shadow-xl">
+                        {conditions.map(c => (
+                          <SelectItem key={c.id} value={c.id} className="rounded-xl py-3 cursor-pointer">
+                            <div className="flex flex-col">
+                              <span className="font-bold">{c.label}</span>
+                              <span className="text-[10px] text-muted-foreground">{c.desc}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-muted-foreground ml-1">Visibilidad Pública</Label>
+                    <div className={cn(
+                      "flex items-center justify-between p-4 rounded-2xl border-2 transition-all",
+                      editingPub.estado ? "bg-green-50/50 border-green-100" : "bg-amber-50/50 border-amber-100"
+                    )}>
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "h-10 w-10 rounded-xl flex items-center justify-center shadow-sm",
+                          editingPub.estado ? "bg-green-500 text-white" : "bg-amber-500 text-white"
+                        )}>
+                          {editingPub.estado ? <Eye className="h-5 w-5" /> : <EyeOff className="h-5 w-5" />}
+                        </div>
+                        <div>
+                          <p className="text-sm font-black">{editingPub.estado ? "Visible" : "Oculto"}</p>
+                          <p className="text-[10px] text-muted-foreground font-medium">
+                            {editingPub.estado ? "Los usuarios pueden alquilarlo" : "Nadie podrá ver tu artículo"}
+                          </p>
+                        </div>
+                      </div>
+                      <Switch 
+                        checked={editingPub.estado} 
+                        onCheckedChange={(checked) => setEditingPub({...editingPub, estado: checked})} 
+                        className="data-[state=checked]:bg-green-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Columna Derecha: Precios y Descripción */}
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-muted-foreground ml-1">Precio x Día</Label>
+                    <div className="relative group">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-primary">S/</span>
+                      <Input 
+                        type="number" 
+                        value={editingPub.precio_dia} 
+                        onChange={e => setEditingPub({...editingPub, precio_dia: e.target.value})} 
+                        className="rounded-2xl h-14 pl-10 bg-secondary/20 border-transparent focus:bg-white focus:border-primary/30 transition-all font-black text-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-6 rounded-[2rem] bg-gradient-to-br from-primary to-primary/80 text-white shadow-xl shadow-primary/20 space-y-4">
+                    <div className="flex justify-between items-center opacity-80">
+                      <div className="flex items-center gap-1.5">
+                        <BadgeCheck className="h-3.5 w-3.5" />
+                        <span className="text-[10px] uppercase font-black tracking-widest">Seguro NexUs (30%)</span>
+                      </div>
+                      <span className="font-bold text-sm">S/ {(Number(editingPub.precio_dia) * 0.3).toFixed(2)}</span>
+                    </div>
+                    <div className="h-px bg-white/20 w-full" />
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <p className="text-[10px] uppercase font-black opacity-70 tracking-tighter">Tu ganancia neta</p>
+                        <p className="text-3xl font-black tracking-tighter">S/ {(Number(editingPub.precio_dia) * 0.7).toFixed(2)}</p>
+                      </div>
+                      <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+                        <DollarSign className="h-6 w-6" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-[10px] uppercase tracking-widest font-black text-muted-foreground ml-1">Descripción del artículo</Label>
+                    <div className="relative group">
+                      <FileText className="absolute left-4 top-4 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                      <textarea 
+                        value={editingPub.descripcion} 
+                        onChange={e => setEditingPub({...editingPub, descripcion: e.target.value})} 
+                        className="w-full min-h-[140px] pl-11 pr-4 py-4 rounded-2xl bg-secondary/20 border-transparent focus:bg-white focus:border-primary/30 transition-all text-sm font-medium outline-none resize-none"
+                        placeholder="Describe detalladamente tu producto..."
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <DialogFooter className="pt-4 gap-3">
-                <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)} className="rounded-xl h-12">Cancelar</Button>
-                <Button type="submit" disabled={isUpdatingPub} className="flex-1 rounded-xl h-12 bg-[#1e5d8c] hover:bg-[#164a6d] font-bold text-white shadow-lg">
-                  {isUpdatingPub ? <Loader2 className="h-5 w-5 animate-spin" /> : "Guardar cambios"}
+              <div className="pt-6 border-t border-border/50 flex flex-col sm:flex-row gap-3">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={() => setShowEditModal(false)} 
+                  className="flex-1 h-14 rounded-2xl font-bold text-muted-foreground hover:bg-secondary/50"
+                >
+                  Cancelar
                 </Button>
-              </DialogFooter>
+                <Button 
+                  type="submit" 
+                  disabled={isUpdatingPub} 
+                  className="flex-[2] h-14 rounded-2xl bg-primary hover:bg-primary/90 font-black text-white shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
+                >
+                  {isUpdatingPub ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  ) : (
+                    <>
+                      <Check className="h-5 w-5 mr-2" /> Guardar Cambios
+                    </>
+                  )}
+                </Button>
+              </div>
             </form>
           )}
         </DialogContent>
