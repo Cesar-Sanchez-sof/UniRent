@@ -9,7 +9,7 @@ El sistema sigue un flujo circular que garantiza la seguridad de ambas partes:
 1.  **Solicitud de Alquiler (Cliente):**
     *   El cliente selecciona un rango de fechas.
     *   **Validación de Traslape:** El sistema verifica que no existan alquileres en estado `Pendiente` o `Activo` en ese mismo rango. Si el dueño rechaza una solicitud (`Cancelado`), las fechas se liberan automáticamente.
-    *   Se calcula el monto total y el seguro (30% del precio base).
+    *   Se calcula el monto total y el seguro (30% del subtotal de días, excluyendo la garantía).
     *   Se envía una notificación al dueño.
 
 2.  **Gestión de Solicitud (Dueño):**
