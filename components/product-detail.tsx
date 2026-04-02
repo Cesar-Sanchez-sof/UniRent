@@ -54,26 +54,43 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
       setIsLoading(true)
       setError(null)
       try {
-        const [productRes, bookedRes, resenasRes] = await Promise.all([
-          fetch(`${API_URL}/publicaciones/${productId}`, { headers: { "Accept": "application/json" } }),
-          fetch(`${API_URL}/publicaciones/${productId}/booked-dates`, { headers: { "Accept": "application/json" } }),
-          fetch(`${API_URL}/publicaciones/${productId}/resenas`, { headers: { "Accept": "application/json" } })
-        ])
+        // 1. Cargamos el producto (Crítico)
+        const productRes = await fetch(`${API_URL}/publicaciones/${productId}`, { 
+          headers: { "Accept": "application/json" } 
+        })
         
-        if (!productRes.ok) throw new Error("No se pudo cargar el producto")
+        if (!productRes.ok) {
+          const errorInfo = await productRes.text();
+          console.error("Error cargando producto:", errorInfo);
+          throw new Error("El artículo no está disponible o no existe.");
+        }
         
         const productData = await productRes.json()
-        const bookedData = bookedRes.ok ? await bookedRes.json() : []
-        const resenasData = resenasRes.ok ? await resenasRes.json() : []
-
         setProduct(productData)
-        setResenas(resenasData)
-        
-        const disabledRanges = bookedData.map((range: any) => ({
-          from: startOfDay(parseISO(range.from)),
-          to: startOfDay(parseISO(range.to))
-        }))
-        setBookedDates(disabledRanges)
+
+        // 2. Cargamos datos secundarios (No críticos - si fallan, seguimos)
+        try {
+          const [bookedRes, resenasRes] = await Promise.all([
+            fetch(`${API_URL}/publicaciones/${productId}/booked-dates`, { headers: { "Accept": "application/json" } }),
+            fetch(`${API_URL}/publicaciones/${productId}/resenas`, { headers: { "Accept": "application/json" } })
+          ])
+
+          if (bookedRes.ok) {
+            const bookedData = await bookedRes.json()
+            const disabledRanges = bookedData.map((range: any) => ({
+              from: startOfDay(parseISO(range.from)),
+              to: startOfDay(parseISO(range.to))
+            }))
+            setBookedDates(disabledRanges)
+          }
+
+          if (resenasRes.ok) {
+            setResenas(await resenasRes.json())
+          }
+        } catch (secondaryErr) {
+          console.warn("Error cargando datos secundarios (fechas o reseñas):", secondaryErr)
+          // No lanzamos error, permitimos que el usuario vea el producto
+        }
 
       } catch (err: any) {
         setError(err.message)
