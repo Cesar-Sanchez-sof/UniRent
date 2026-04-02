@@ -442,8 +442,15 @@ function ProfileContent() {
             </div>
 
             <nav className="bg-card rounded-2xl border border-border p-2 shadow-sm space-y-1 bg-white">
-              <Button variant="ghost" onClick={() => setActiveTab('config')} className={cn("w-full justify-start gap-3 rounded-xl", activeTab === 'config' ? "bg-primary/10 text-primary font-bold" : "text-muted-foreground")}>
-                <Settings className="h-4 w-4" /> Configuración
+              <Button variant="ghost" onClick={() => setActiveTab('config')} className={cn("w-full justify-start gap-3 rounded-xl relative", activeTab === 'config' ? "bg-primary/10 text-primary font-bold" : "text-muted-foreground")}>
+                <Settings className="h-4 w-4" /> 
+                Configuración
+                {Number(user?.deuda) > 0 && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                )}
               </Button>
               <Button variant="ghost" onClick={() => setActiveTab('publications')} className={cn("w-full justify-start gap-3 rounded-xl", activeTab === 'publications' ? "bg-primary/10 text-primary font-bold" : "text-muted-foreground")}>
                 <Package className="h-4 w-4" /> Mis Publicaciones
@@ -625,7 +632,68 @@ function ProfileContent() {
             )}
 
             {activeTab === 'config' && (
-              <div className="bg-card rounded-2xl border border-border shadow-md overflow-hidden bg-white">
+              <div className="space-y-6">
+                {/* Deuda Card */}
+                <div className={cn(
+                  "rounded-2xl border p-6 flex flex-col md:flex-row justify-between items-center shadow-sm transition-all duration-300",
+                  Number(user?.deuda) > 0 
+                    ? "bg-red-50 border-red-100 animate-in fade-in slide-in-from-top-4" 
+                    : "bg-green-50 border-green-100"
+                )}>
+                  <div className="flex items-center gap-4 mb-4 md:mb-0">
+                    <div className={cn(
+                      "h-14 w-14 rounded-2xl flex items-center justify-center shadow-sm",
+                      Number(user?.deuda) > 0 ? "bg-red-500 text-white" : "bg-green-500 text-white"
+                    )}>
+                      <DollarSign className="h-7 w-7" />
+                    </div>
+                    <div>
+                      <h4 className={cn(
+                        "text-lg font-black tracking-tight",
+                        Number(user?.deuda) > 0 ? "text-red-900" : "text-green-900"
+                      )}>
+                        {Number(user?.deuda) > 0 ? "Deuda de Comisiones" : "¡Al día con NexUs!"}
+                      </h4>
+                      <p className={cn(
+                        "text-sm font-medium",
+                        Number(user?.deuda) > 0 ? "text-red-600/80" : "text-green-600/80"
+                      )}>
+                        {Number(user?.deuda) > 0 
+                          ? "Tienes pagos pendientes por las comisiones de tus alquileres." 
+                          : "No tienes deudas pendientes por el momento."}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-6 w-full md:w-auto border-t md:border-t-0 md:border-l border-current/10 pt-4 md:pt-0 md:pl-6">
+                    <div className="text-left md:text-right flex-1 md:flex-none">
+                      <p className={cn(
+                        "text-[10px] font-black uppercase tracking-widest opacity-60",
+                        Number(user?.deuda) > 0 ? "text-red-500" : "text-green-500"
+                      )}>Monto Total</p>
+                      <p className={cn(
+                        "text-3xl font-black tracking-tighter",
+                        Number(user?.deuda) > 0 ? "text-red-900" : "text-green-900"
+                      )}>S/ {formatPrice(Number(user?.deuda || 0))}</p>
+                    </div>
+                    
+                    {Number(user?.deuda) > 0 && (
+                      <Button 
+                        className="rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black px-8 h-14 shadow-xl shadow-red-200 transition-all active:scale-95 group"
+                        onClick={() => toast({ 
+                          title: "Módulo de Pagos", 
+                          description: "Estamos trabajando en una pasarela de pagos sin comisiones extra para ti.",
+                          className: "bg-white border-red-200"
+                        })}
+                      >
+                        Pagar Deuda
+                        <CheckCircle2 className="ml-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-card rounded-2xl border border-border shadow-md overflow-hidden bg-white">
                 <div className="px-8 py-6 border-b border-border flex justify-between items-center bg-card">
                   <div><h3 className="text-lg font-bold">Configuración de Perfil</h3><p className="text-sm text-muted-foreground">Gestiona tus datos personales.</p></div>
                   <div className="flex gap-2">
@@ -641,10 +709,11 @@ function ProfileContent() {
                   <div className="col-span-1 md:col-span-2 space-y-1.5"><Label>Correo Electrónico</Label><Input value={formData.correo} onChange={e => setFormData({ ...formData, correo: e.target.value })} className="rounded-xl h-11" /></div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-      </main>
+      </div>
+    </main>
 
       {/* Modales */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
