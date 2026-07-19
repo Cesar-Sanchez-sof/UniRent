@@ -2,26 +2,26 @@ import { Leaf, Shield, HelpCircle } from "lucide-react"
 
 const footerLinks = [
   {
-    title: "Econom\u00eda Circular",
+    title: "Economía Circular",
     description: "Reutiliza, comparte y ahorra en campus",
     icon: Leaf,
     href: "#",
   },
   {
-    title: "Seguro NexUs Protect",
-    description: "Protecci\u00f3n contra da\u00f1os y robo",
+    title: "Seguro UniRent Protect",
+    description: "Protección contra daños y robo",
     icon: Shield,
     href: "#",
   },
   {
     title: "Centro de Ayuda",
-    description: "Resuelve tus dudas r\u00e1pidamente",
+    description: "Resuelve tus dudas rápidamente",
     icon: HelpCircle,
     href: "#",
   },
 ]
 
-export function NexusFooter() {
+export function UniRentFooter() {
   return (
     <footer className="border-t border-border bg-card">
       {/* Links row */}
@@ -57,10 +57,10 @@ export function NexusFooter() {
         <div className="mx-auto max-w-7xl px-4 lg:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
             <div className="w-5 h-5 rounded bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-[10px]">N</span>
+              <span className="text-primary-foreground font-bold text-[10px]">U</span>
             </div>
             <span className="text-sm text-muted-foreground">
-              {"© 2026 NexUs. Todos los derechos reservados."}
+              {"© 2026 UniRent. Todos los derechos reservados."}
             </span>
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">

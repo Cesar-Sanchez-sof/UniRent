@@ -16,7 +16,7 @@ import { API_URL } from "../lib/api"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 
-export function NexusHeader() {
+export function UniRentHeader() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userData, setUserData] = useState<any>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -104,7 +104,7 @@ export function NexusHeader() {
       <header className="sticky top-0 z-50 w-full border-b border-border bg-white">
         <div className="mx-auto max-w-7xl px-4 lg:px-6 h-16 lg:h-20 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <a href="/" className="text-2xl font-bold tracking-tighter text-foreground">NexUs</a>
+            <a href="/" className="text-2xl font-bold tracking-tighter text-foreground">UniRent</a>
             
             <div className="hidden md:flex relative w-80 lg:w-96">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -251,7 +251,7 @@ export function NexusHeader() {
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[9999] bg-white lg:hidden flex flex-col">
           <div className="flex items-center justify-between p-4 h-16 border-b">
-            <span className="text-2xl font-bold tracking-tighter">NexUs</span>
+            <span className="text-2xl font-bold tracking-tighter">UniRent</span>
             <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-full bg-secondary">
               <X className="h-6 w-6" />
             </button>

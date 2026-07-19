@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { NexusHeader } from "@/components/nexus-header"
-import { NexusFooter } from "@/components/nexus-footer"
+import { UniRentHeader } from "@/components/unirent-header"
+import { UniRentFooter } from "@/components/unirent-footer"
 import { ProductCard } from "@/components/product-card"
 import {
   User, Settings, Star, CreditCard, GraduationCap, Phone, Mail, Save, Loader2,
@@ -421,7 +421,7 @@ function ProfileContent() {
 
   return (
     <div className="min-h-screen bg-secondary/30">
-      <NexusHeader />
+      <UniRentHeader />
 
       <main className="max-w-7xl mx-auto px-4 lg:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -652,7 +652,7 @@ function ProfileContent() {
                         "text-lg font-black tracking-tight",
                         Number(user?.deuda) > 0 ? "text-red-900" : "text-green-900"
                       )}>
-                        {Number(user?.deuda) > 0 ? "Deuda de Comisiones" : "¡Al día con NexUs!"}
+                        {Number(user?.deuda) > 0 ? "Deuda de Comisiones" : "¡Al día con UniRent!"}
                       </h4>
                       <p className={cn(
                         "text-sm font-medium",
@@ -856,7 +856,7 @@ function ProfileContent() {
                     <div className="flex justify-between items-center opacity-80">
                       <div className="flex items-center gap-1.5">
                         <BadgeCheck className="h-3.5 w-3.5" />
-                        <span className="text-[10px] uppercase font-black tracking-widest">Seguro NexUs (30%)</span>
+                        <span className="text-[10px] uppercase font-black tracking-widest">Seguro UniRent (30%)</span>
                       </div>
                       <span className="font-bold text-sm">S/ {(Number(editingPub.precio_dia) * 0.3).toFixed(2)}</span>
                     </div>
@@ -988,7 +988,7 @@ function ProfileContent() {
         </DialogContent>
       </Dialog>
 
-      <NexusFooter />
+      <UniRentFooter />
     </div>
   )
 }

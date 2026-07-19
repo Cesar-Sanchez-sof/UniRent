@@ -103,7 +103,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         </div>
 
         <div className="px-5 py-4 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-          <p>{"NexUs 2026. Todos los derechos reservados."}</p>
+          <p>{"UniRent 2026. Todos los derechos reservados."}</p>
           <div className="hidden sm:flex items-center gap-4">
             <a href="#" className="hover:text-foreground transition-colors">Ayuda</a>
             <a href="#" className="hover:text-foreground transition-colors">Privacidad</a>

@@ -1,6 +1,6 @@
-# NexUs - Sistema de Alquiler P2P Universitario (Documentación Técnica)
+# UniRent - Sistema de Alquiler P2P Universitario (Documentación Técnica)
 
-Este documento detalla el funcionamiento y la lógica técnica implementada en el proyecto NexUs para el manejo de alquileres, notificaciones y el sistema de confianza (reseñas).
+Este documento detalla el funcionamiento y la lógica técnica implementada en el proyecto UniRent para el manejo de alquileres, notificaciones y el sistema de confianza (reseñas).
 
 ## 🚀 Flujo del Ciclo de Alquiler
 
@@ -66,5 +66,5 @@ El usuario puede gestionar todo desde su panel:
     *   Recordatorios de reseñas pendientes al finalizar un servicio.
 
 ---
-**Desarrollado para:** NexUs P2P Renting System
+**Desarrollado para:** UniRent P2P Renting System
 **Fecha:** 10 de Marzo de 2026

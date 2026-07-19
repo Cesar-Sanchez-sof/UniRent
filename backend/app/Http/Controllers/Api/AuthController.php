@@ -89,7 +89,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'Bienvenido a NexUs',
+            'message' => 'Bienvenido a UniRent',
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => [

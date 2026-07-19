@@ -153,7 +153,7 @@ class AlquilerController extends Controller
     }
 
     /**
-     * Registra una nueva solicitud de alquiler según el SQL NextUs.
+     * Registra una nueva solicitud de alquiler según el SQL UniRent.
      */
     public function store(Request $request)
     {
