@@ -3,8 +3,8 @@ import { RegisterForm } from "@/components/register-form"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Crear Cuenta - NexUs",
-  description: "Registrate en NexUs y empieza a alquilar articulos entre universitarios.",
+  title: "Crear Cuenta - UniRent",
+  description: "Regístrate en UniRent y empieza a alquilar artículos entre universitarios.",
 }
 
 export default function RegisterPage() {

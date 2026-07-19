@@ -1,6 +1,6 @@
 {
-  "name": "NextUs",
-  "short_name": "NextUs",
+  "name": "UniRent",
+  "short_name": "UniRent",
   "description": "Alquiler de equipos y servicios",
   "start_url": "/",
   "display": "standalone",

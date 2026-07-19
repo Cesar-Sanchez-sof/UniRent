@@ -1,7 +1,7 @@
 "use client"
 
-import { NexusHeader } from "@/components/nexus-header"
-import { NexusFooter } from "@/components/nexus-footer"
+import { UniRentHeader } from "@/components/unirent-header"
+import { UniRentFooter } from "@/components/unirent-footer"
 import { PublishForm } from "@/components/publish-form"
 import { ArrowLeft, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 export default function PublishPage() {
   return (
     <div className="min-h-screen bg-secondary/30">
-      <NexusHeader />
+      <UniRentHeader />
       
       <main className="max-w-4xl mx-auto px-4 lg:px-6 py-12">
         <div className="flex flex-col gap-8">
@@ -40,7 +40,8 @@ export default function PublishPage() {
         </div>
       </main>
 
-      <NexusFooter />
+      <UniRentFooter />
     </div>
   )
 }
+

@@ -52,7 +52,7 @@ export function LoginForm() {
         localStorage.setItem('user', JSON.stringify(data.user))
 
         toast({
-          title: "¡Bienvenido a NexUs!",
+          title: "¡Bienvenido a UniRent!",
           description: "Has iniciado sesión correctamente.",
         })
 
@@ -137,7 +137,7 @@ export function LoginForm() {
             </>
           ) : (
             <>
-              Entrar a NexUs
+              Entrar a UniRent
               <ArrowRight className="ml-2 h-4 w-4" />
             </>
           )}

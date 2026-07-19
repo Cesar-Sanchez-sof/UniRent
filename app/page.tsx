@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { NexusHeader } from "@/components/nexus-header"
+import { UniRentHeader } from "@/components/unirent-header"
 import { CategoryFilters } from "@/components/category-filters"
 import { ProductGrid } from "@/components/product-grid"
 import { ProductDetail } from "@/components/product-detail"
-import { NexusFooter } from "@/components/nexus-footer"
+import { UniRentFooter } from "@/components/unirent-footer"
 
 export default function Home() {
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null)
@@ -23,7 +23,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <NexusHeader />
+      <UniRentHeader />
       <CategoryFilters onCategoryChange={(id) => setSelectedCategoryId(id)} />
 
       <main className="flex-1">
@@ -34,7 +34,7 @@ export default function Home() {
         />
       </main>
 
-      <NexusFooter />
+      <UniRentFooter />
 
       {selectedProductId && (
         <ProductDetail 
@@ -45,3 +45,4 @@ export default function Home() {
     </div>
   )
 }
+

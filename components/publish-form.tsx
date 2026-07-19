@@ -577,7 +577,7 @@ export function PublishForm() {
           </Button>
         </div>
         <p className="text-xs text-center text-muted-foreground">
-          Al publicar, aceptas las políticas de NexUs para propietarios.
+          Al publicar, aceptas las políticas de UniRent para propietarios.
         </p>
       </div>
     </form>

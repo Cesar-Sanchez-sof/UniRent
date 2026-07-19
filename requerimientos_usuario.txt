@@ -1,0 +1,257 @@
+================================================================================
+      REQUERIMIENTOS DEL SISTEMA NEXTUS - 100 HISTORIAS DE USUARIO (USER STORIES)
+================================================================================
+
+Este documento detalla los 100 requerimientos funcionales del sistema P2P de 
+alquiler universitario "NextUs", estructurados y divididos equitativamente (50 y 50) 
+entre los dos roles principales del sistema. Toda la sintaxis de escritura cumple 
+estrictamente con el estándar: "Yo [Rol], como [Contexto], quiero [Acción] para [Beneficio]".
+
+================================================================================
+PARTE 1: REQUERIMIENTOS DE "EL QUE PUBLICA" (PROPIETARIO / ARRENDADOR)
+================================================================================
+
+---------------------------------------
+A. Registro y Publicación de Artículos
+---------------------------------------
+
+1. Yo, como Propietario de un artículo, como usuario registrado, quiero subir entre 1 y 8 imágenes del producto para mostrar claramente su estado físico y visual.
+
+2. Yo, como Propietario de un artículo, como arrendador, quiero visualizar una miniatura de cada foto cargada para comprobar que se subieron correctamente antes de publicar.
+
+3. Yo, como Propietario de un artículo, como arrendador detallista, quiero reordenar la secuencia de las imágenes cargadas para elegir cuál de ellas será la portada principal del anuncio.
+
+4. Yo, como Propietario de un artículo, como usuario del sistema, quiero definir un título de entre 4 y 80 caracteres para que los arrendatarios ubiquen rápidamente mi producto.
+
+5. Yo, como Propietario de un artículo, como usuario responsable, quiero redactar una descripción de hasta 500 caracteres para detallar el funcionamiento, especificaciones técnicas y accesorios incluidos.
+
+6. Yo, como Propietario de un artículo, como arrendador cuidadoso, quiero incluir restricciones de uso específicas en la descripción para proteger mi bien de daños previsibles.
+
+7. Yo, como Propietario de un artículo, como usuario organizado, quiero seleccionar una categoría del artículo (Tecnología, Libros, Fotografía, Herramientas, Arte, Deporte) para indexar mi producto adecuadamente en el catálogo.
+
+8. Yo, como Propietario de un artículo, como ofertante de la plataforma, quiero clasificar el estado de conservación del producto (Nuevo, Como nuevo, Buen estado, Aceptable) para alinear las expectativas de calidad del cliente.
+
+9. Yo, como Propietario de un artículo, por favor quiero establecer una tarifa de alquiler diaria muy económica en Soles (S/) para definir el bajo costo de uso de mi artículo y mantenerlo siempre accesible para otros estudiantes.
+
+10. Yo, como Propietario de un artículo, como arrendador estratégico, quiero configurar descuentos automáticos para alquileres de larga duración (semanales o mensuales) para incentivar alquileres prolongados.
+
+11. Yo, como Propietario de un artículo, por favor quiero ingresar el valor real de mi artículo de bajo costo para que la plataforma calcule de manera justa y simplificada la cobertura de protección en caso de pérdida.
+
+12. Yo, como Propietario de un artículo, como usuario local, quiero seleccionar mi Departamento de residencia para delimitar el alcance geográfico general de mi oferta.
+
+13. Yo, como Propietario de un artículo, como usuario regional, quiero seleccionar mi Provincia de residencia para precisar la zona de distribución del artículo.
+
+14. Yo, como Propietario de un artículo, como estudiante del campus, quiero seleccionar mi Distrito de entrega preferido para que los clientes cercanos de mi universidad me ubiquen fácilmente.
+
+15. Yo, como Propietario de un artículo, como arrendador presencial, quiero escribir una referencia física de entrega (ej: "Puerta principal de la universidad") para agilizar el punto de encuentro inicial.
+
+---------------------------------------
+B. Edición y Gestión del Inventario
+---------------------------------------
+
+16. Yo, como Propietario de un artículo, como ofertante activo, quiero editar el título y la descripción de mis publicaciones vigentes para corregir errores o añadir detalles nuevos.
+
+17. Yo, como Propietario de un artículo, como administrador de mis bienes, quiero modificar el precio de alquiler diario de mis artículos publicados para adaptarme a los precios de la competencia.
+
+18. Yo, como Propietario de un artículo, como usuario en constante mudanza, quiero actualizar el distrito y ubicación de mis anuncios para reflejar mi ubicación actual.
+
+19. Yo, como Propietario de un artículo, como arrendador visual, quiero agregar nuevas fotos o eliminar fotos antiguas de mis artículos publicados para refrescar la apariencia del anuncio.
+
+20. Yo, como Propietario de un artículo, como arrendador ocupado, quiero pausar temporalmente una publicación (marcarla como inactiva) para detener la llegada de solicitudes sin tener que borrar el anuncio.
+
+21. Yo, como Propietario de un artículo, como arrendador disponible, quiero reactivar una publicación pausada para que vuelva a estar visible inmediatamente en el catálogo general.
+
+22. Yo, como Propietario de un artículo, como usuario definitivo, quiero eliminar permanentemente mis publicaciones para retirar del sistema los productos que ya he vendido o que no deseo volver a alquilar.
+
+23. Yo, como Propietario de un artículo, como administrador analítico, quiero ver una métrica con la cantidad de vistas que tiene cada uno de mis anuncios para evaluar el interés que generan en los estudiantes.
+
+---------------------------------------
+C. Gestión de Solicitudes y Reservas
+---------------------------------------
+
+24. Yo, como Propietario de un artículo, como usuario móvil, quiero recibir una notificación en tiempo real cuando un arrendatario envíe una solicitud de alquiler para atenderla a la brevedad.
+
+25. Yo, como Propietario de un artículo, como usuario desconectado, quiero recibir un correo electrónico automatizado con los detalles de cada nueva reserva para estar al tanto de las actividades de mi cuenta.
+
+26. Yo, como Propietario de un artículo, como ofertante disponible, quiero ver una lista de solicitudes pendientes organizadas cronológicamente para evaluar su orden de llegada.
+
+27. Yo, como Arrendador, por favor quiero saber y verificar a quién le estoy alquilando mi producto (mediante su nombre completo, foto y código de alumno) para tener la tranquilidad de que es una persona confiable y no dañará mis pertenencias.
+
+28. Yo, como Propietario de un artículo, como administrador de caja, quiero ver el desglose de ganancias netas (el 70%) y la comisión de seguro de la plataforma (el 30%) en cada solicitud para saber con precisión cuánto dinero recibiré.
+
+29. Yo, como Propietario de un artículo, como arrendador organizado, quiero revisar el rango de fechas específicas solicitado por el cliente para verificar que no interfiera con mis propios planes de uso.
+
+30. Yo, como Propietario de un artículo, como usuario decisor, quiero aceptar una solicitud de alquiler pendiente para autorizar la reserva del artículo y bloquear esas fechas en mi calendario.
+
+31. Yo, como Propietario de un artículo, como usuario con alta demanda, quiero rechazar solicitudes de alquiler indicando el motivo de rechazo para mantener informados a los solicitantes.
+
+32. Yo, como Propietario de un artículo, como arrendador con imprevistos, quiero cancelar una reserva ya aceptada con al menos 24 horas de anticipación para resolver urgencias personales imprevistas.
+
+33. Yo, como Propietario de un artículo, como usuario presencial, quiero presionar un botón de "Confirmar Entrega Física" al encontrarme con el cliente para iniciar formalmente el periodo de alquiler (estado Activo).
+
+34. Yo, como Propietario de un artículo, como receptor del producto, quiero presionar un botón de "Confirmar Devolución Conforme" al recibir mi producto de vuelta en buen estado para finalizar el proceso y autorizar el reembolso de la garantía al cliente.
+
+---------------------------------------
+D. Finanzas y Seguridad
+---------------------------------------
+
+35. Yo, como Propietario de un artículo, como usuario de la comunidad, quiero tener un enlace rápido para iniciar un chat directo de WhatsApp con el cliente para agilizar la entrega del artículo.
+
+36. Yo, como Propietario de un artículo, como arrendador precavido, quiero reportar daños o averías en mi artículo al momento del retorno físico para iniciar una disputa de garantía en la plataforma.
+
+37. Yo, como Propietario de un artículo, como usuario afectado, quiero solicitar la retención total o parcial del depósito de garantía del cliente para cubrir costos de reparación debidamente sustentados con fotos.
+
+38. Yo, como Propietario de un artículo, como usuario financiero, quiero ver mi historial completo de ingresos acumulados por mes para llevar una contabilidad clara de mis actividades de alquiler.
+
+39. Yo, como Propietario de un artículo, como usuario bancario, quiero configurar mis métodos de cobro preferidos (Yape, Plin o Cuenta Bancaria) para recibir mis ingresos directamente en mi cuenta.
+
+40. Yo, como Propietario de un artículo, como usuario del sistema, quiero solicitar la transferencia de mis fondos acumulados a mi cuenta bancaria registrada para disponer de mis ganancias en efectivo.
+
+41. Yo, como Propietario de un artículo, como usuario activo, quiero recibir un reporte en PDF de mis transacciones anuales para declarar mis ingresos en caso de ser necesario.
+
+---------------------------------------
+E. Perfil y Reputación
+---------------------------------------
+
+42. Yo, como Propietario de un artículo, como usuario de la plataforma, quiero subir o actualizar mi foto de perfil para transmitir confianza y profesionalismo a los arrendatarios.
+
+43. Yo, como Propietario de un artículo, como usuario móvil, quiero actualizar mi número de teléfono verificado para que los clientes puedan contactarme sin errores.
+
+44. Yo, como Propietario de un artículo, por favor quiero registrarme e iniciar sesión obligatoriamente con mi correo institucional (.edu.pe) y mi ID interno universitario, para validar y justificar ante la comunidad que soy un miembro legítimo y activo de la universidad.
+
+45. Yo, como Propietario de un artículo, como evaluador de la comunidad, quiero calificar de 1 a 5 estrellas al arrendatario al finalizar el trato para registrar su nivel de puntualidad y cuidado del producto.
+
+46. Yo, como Propietario de un artículo, como usuario proactivo, quiero escribir un comentario de reseña sobre el arrendatario para destacar su excelente comportamiento o alertar a otros propietarios sobre malas conductas.
+
+47. Yo, como Propietario de un artículo, como usuario de la plataforma, quiero cambiar mi contraseña desde mi configuración de perfil para mantener la seguridad de mi cuenta.
+
+48. Yo, como Propietario de un artículo, como usuario de la comunidad, quiero reportar o bloquear a un arrendatario conflictivo o sospechoso para evitar recibir futuras solicitudes de su parte.
+
+49. Yo, como Propietario de un artículo, como arrendador verificado, quiero exhibir una insignia de "Propietario Destacado" si mi calificación promedio es superior a 4.8 estrellas para destacar mis publicaciones frente a otros usuarios.
+
+50. Yo, como Propietario de un artículo, como usuario de soporte, quiero enviar una solicitud de ayuda directamente al administrador en caso de tener problemas con un cobro para resolver la incidencia a la brevedad.
+
+
+================================================================================
+PARTE 2: REQUERIMIENTOS DE "EL QUE ALQUILA" (ARRENDATARIO / CLIENTE)
+================================================================================
+
+---------------------------------------
+A. Búsqueda y Descubrimiento
+---------------------------------------
+
+51. Yo, como Arrendatario, como usuario con una necesidad inmediata, quiero buscar artículos escribiendo en una barra de texto libre para encontrar herramientas o dispositivos específicos de forma rápida.
+
+52. Yo, como Arrendatario, como usuario metódico, quiero filtrar los resultados por categorías de interés para no visualizar artículos ajenos a lo que busco.
+
+53. Yo, como Arrendatario, por favor quiero filtrar los artículos cotidianos por tarifas de bajo costo para ajustarme al presupuesto diario estudiantil limitado.
+
+54. Yo, como Arrendatario, como usuario local, quiero filtrar los artículos por mi distrito actual para buscar únicamente productos que pueda recoger a pie o en trayectos cortos.
+
+55. Yo, como Arrendatario, como usuario exigente, quiero filtrar los productos por la calificación de reputación del dueño (ej: solo dueños con 4+ estrellas) para minimizar riesgos de mala atención.
+
+56. Yo, como Arrendatario, como estudiante universitario, quiero filtrar artículos de dueños pertenecientes a mi misma universidad para facilitar la entrega dentro del campus.
+
+57. Yo, como Arrendatario, como usuario meticuloso, quiero filtrar los anuncios por la condición física del artículo (Nuevo, Como nuevo, etc.) para asegurar el estándar de calidad que requiero.
+
+58. Yo, como Arrendatario, como comprador ahorrativo, quiero ordenar la lista de resultados de menor a mayor precio diario para identificar la opción más barata disponible.
+
+59. Yo, como Arrendatario, como usuario cuidadoso, quiero ordenar la lista de resultados de mayor a menor calificación de confianza del propietario para priorizar a los mejores arrendadores.
+
+60. Yo, como Arrendatario, como usuario interesado, quiero guardar artículos en una sección de "Favoritos" para comparar opciones antes de realizar la reserva definitiva.
+
+---------------------------------------
+B. Visualización de Detalles y Decisiones
+---------------------------------------
+
+61. Yo, como Arrendatario, como observador detallista, quiero navegar en un carrusel de fotos en la ficha del producto para inspeccionar visualmente todos los ángulos del artículo.
+
+62. Yo, como Arrendatario, como usuario interesado, quiero leer la descripción completa y especificaciones del producto en la ficha de detalle para verificar que sea compatible con mis necesidades.
+
+63. Yo, como Arrendatario, como usuario cauteloso, quiero ver la reputación promedio en estrellas y leer las reseñas de antiguos clientes sobre el artículo para validar su correcto funcionamiento.
+
+64. Yo, como Arrendatario, como usuario precavido, quiero ver la calificación histórica del propietario en la ficha del artículo para conocer el trato y puntualidad que ofrece.
+
+65. Yo, como Arrendatario, como estudiante del campus, quiero visualizar la universidad y facultad a la que pertenece el propietario para saber si compartimos espacios físicos comunes.
+
+66. Yo, como Arrendatario, como usuario local, quiero ver una zona de referencia aproximada de entrega del producto para calcular el tiempo que me tomará ir a recogerlo.
+
+67. Yo, como Arrendatario, como usuario con dudas de último minuto, quiero pulsar un botón de consulta vía WhatsApp con el dueño para resolver preguntas técnicas antes de reservar.
+
+---------------------------------------
+C. Proceso de Reserva e Interacción
+---------------------------------------
+
+68. Yo, como Arrendatario, como planificador, quiero seleccionar el rango de días de alquiler utilizando un calendario interactivo para programar mi alquiler según mis fechas de estudio o proyectos.
+
+69. Yo, como Arrendatario, como usuario del sistema, quiero que el calendario bloquee automáticamente los días pasados y las fechas que ya estén ocupadas por reservas de otros usuarios para evitar el envío de solicitudes inviables.
+
+70. Yo, como Arrendatario, por favor quiero visualizar un desglose claro de los bajos costos (tarifa diaria reducida x días + depósito mínimo de garantía) en tiempo real para verificar que el alquiler sea económico y accesible.
+
+71. Yo, como Arrendatario, como usuario previsor, quiero conocer el monto de garantía reembolsable exigido para preparar la liquidez de dinero necesaria para el depósito.
+
+72. Yo, como Arrendatario, como cliente responsable, quiero leer una advertencia legal explícita sobre la retención de la garantía en caso de daños antes de confirmar el pedido para ser consciente del cuidado del bien.
+
+73. Yo, como Arrendatario, como usuario visitante, quiero que el sistema me redirija automáticamente a la pantalla de login si intento reservar sin haber iniciado sesión para mantener la trazabilidad de mis pedidos.
+
+74. Yo, como Arrendatario, como solicitante formal, quiero enviar una solicitud de reserva con mis fechas y desgloses calculados para que el propietario apruebe mi petición.
+
+75. Yo, como Arrendatario, como usuario conectado, quiero recibir una notificación instantánea en mi celular cuando el propietario acepte mi solicitud para proceder con la coordinación.
+
+76. Yo, como Arrendatario, como usuario activo, quiero recibir una notificación en tiempo real si el propietario rechaza mi solicitud para buscar otras alternativas de inmediato en la plataforma.
+
+77. Yo, como Arrendatario, como cliente con planes cambiantes, quiero cancelar una solicitud de alquiler pendiente (que aún no ha sido aceptada por el dueño) para liberar mi saldo sin penalizaciones.
+
+78. Yo, como Arrendatario, como pagador digital, quiero realizar el pago total (alquiler + garantía) a través de una pasarela de pago segura dentro de la plataforma para asegurar mi dinero mediante el sistema de custodia (Escrow).
+
+---------------------------------------
+D. Recepción, Uso y Devolución
+---------------------------------------
+
+79. Yo, como Arrendatario, como usuario presencial, quiero ver un código QR único de reserva en mi perfil para mostrárselo al dueño al momento de la entrega física y agilizar la verificación.
+
+80. Yo, como Arrendatario, como cliente receptor, quiero confirmar la recepción conforme del artículo presionando un botón en la app tras inspeccionar el producto con el dueño para iniciar la cobertura del seguro.
+
+81. Yo, como Arrendatario, como estudiante con proyectos extendidos, quiero solicitar una extensión del plazo de alquiler desde mi panel para seguir usando el artículo si el dueño no tiene otras reservas programadas.
+
+82. Yo, como Arrendatario, como usuario cumplido, quiero presionar un botón de "Notificar Devolución" al entregar físicamente el artículo al dueño para que este confirme la recepción y cierre el ciclo de alquiler.
+
+83. Yo, como Arrendatario, como cliente administrativo, quiero visualizar mi historial de alquileres anteriores con sus respectivos estados de pago para llevar un registro de mis gastos estudiantiles.
+
+84. Yo, como Arrendatario, como usuario contable, quiero descargar un comprobante digital de pago de cada alquiler para presentarlo en mi rendición de gastos o control personal.
+
+85. Yo, como Arrendatario, como depositante, quiero recibir un reembolso automático de mi garantía de alquiler en un plazo máximo de 48 horas tras la confirmación de devolución conforme por parte del dueño.
+
+86. Yo, como Arrendatario, como usuario en desacuerdo, quiero abrir una disputa formal ante el servicio al cliente si el dueño retiene injustificadamente mi garantía para que un mediador de NextUs evalúe el caso.
+
+---------------------------------------
+E. Gestión de Perfil, Reputación y Alertas
+---------------------------------------
+
+87. Yo, como Arrendatario, como usuario activo de la comunidad, quiero calificar con estrellas al artículo alquilado para ayudar a otros estudiantes a conocer el rendimiento del producto.
+
+88. Yo, como Arrendatario, como cliente sincero, quiero escribir una opinión textual detallando mi experiencia de uso del artículo para aportar valor a la sección de opiniones del producto.
+
+89. Yo, como Arrendatario, como evaluador de servicio, quiero calificar la puntualidad y amabilidad del dueño para mantener actualizada su reputación dentro del sistema.
+
+90. Yo, como Arrendatario, como usuario afectado, quiero reportar a un propietario si entrega un artículo roto, defectuoso o significativamente diferente a las fotos publicadas para solicitar la cancelación inmediata del alquiler.
+
+91. Yo, como Arrendatario, como usuario de la comunidad, quiero reportar comportamientos inapropiados o intentos de estafa fuera de la plataforma por parte de un propietario para proteger a otros estudiantes.
+
+92. Yo, como Arrendatario, como miembro registrado, quiero actualizar mi foto de perfil y nombre para que los propietarios me reconozcan fácilmente en el punto de entrega.
+
+93. Yo, como Arrendatario, como usuario de contacto, quiero actualizar mi número telefónico en mi panel de configuración para asegurar que los propietarios me llamen ante cualquier coordinación urgente.
+
+94. Yo, como Arrendatario, por favor quiero registrarme e iniciar sesión ingresando mi correo institucional (.edu.pe) e ID interno universitario, para justificar mi estatus académico actual y poder acceder de manera segura a alquileres de artículos cotidianos de bajo costo, accesibles y con bajo criterio de deterioro.
+
+95. Yo, como Arrendatario, como usuario de cobro, quiero configurar mi cuenta bancaria o número de celular de billetera digital para recibir reembolsos rápidos de mis depósitos de garantía.
+
+96. Yo, como Arrendatario, como deudor involuntario, quiero visualizar una alerta permanente de "Deuda Activa" en mi perfil si tengo multas o penalidades pendientes por retrasos en la devolución.
+
+97. Yo, como Arrendatario, como usuario despistado, quiero recibir una notificación automática 24 horas antes del vencimiento de mi alquiler para planificar con tiempo el retorno físico del artículo.
+
+98. Yo, como Arrendatario, como usuario móvil, quiero recibir una alerta de urgencia cuando el periodo de alquiler haya vencido para evitar penalidades por día de retraso.
+
+99. Yo, como Arrendatario, como usuario con consultas, quiero acceder a una sección de Preguntas Frecuentes (FAQ) desde mi perfil para resolver rápidamente dudas sobre garantías, retrasos y pagos.
+
+100. Yo, como Arrendatario, como usuario insatisfecho, quiero reportar fallos técnicos o errores en la app móvil/web directamente al equipo de soporte de NextUs para mejorar el funcionamiento de la plataforma.
