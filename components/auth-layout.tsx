@@ -24,11 +24,10 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 text-primary-foreground">
           <a href="/" className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-primary-foreground/20 backdrop-blur-sm flex items-center justify-center border border-primary-foreground/10">
-              <span className="text-primary-foreground font-bold text-base">N</span>
+              <span className="text-primary-foreground font-bold text-base">U</span>
             </div>
             <span className="text-xl font-bold tracking-tight text-primary-foreground">
-              {"Nex"}
-              <span className="text-primary-foreground/80">Us</span>
+              Uni<span className="text-primary-foreground/80">Rent</span>
             </span>
           </a>
 
@@ -87,10 +86,10 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         <div className="lg:hidden flex items-center justify-between px-5 py-4 border-b border-border">
           <a href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">N</span>
+              <span className="text-primary-foreground font-bold text-sm">U</span>
             </div>
             <span className="text-lg font-bold tracking-tight text-foreground">
-              Nex<span className="text-primary">Us</span>
+              Uni<span className="text-primary">Rent</span>
             </span>
           </a>
           <a href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium">
