@@ -564,31 +564,61 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* 9. CALL TO ACTION FINAL */}
-        <section className="py-20 bg-white">
+        {/* 9. CALL TO ACTION FINAL (REDISEÑADO & MEJORADO) */}
+        <section className="py-20 bg-slate-50">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-gradient-to-r from-primary via-indigo-600 to-blue-600 rounded-3xl p-10 sm:p-14 text-white text-center space-y-6 shadow-2xl shadow-indigo-500/20 relative overflow-hidden">
-              <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+            <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-10 sm:p-16 text-white text-center space-y-8 shadow-2xl shadow-indigo-950/40 border border-indigo-500/20 overflow-hidden">
               
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
-                ¿Listo para alquilar o ganar dinero hoy?
-              </h2>
-              
-              <p className="text-indigo-100 text-base sm:text-lg max-w-2xl mx-auto">
-                Únete a la plataforma P2P universitaria más confiable. Explora los artículos disponibles o publica el tuyo en menos de 2 minutos.
-              </p>
+              {/* Glowing Ambient Background Lights */}
+              <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-primary/25 blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-indigo-600/20 blur-3xl pointer-events-none" />
 
-              <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Button asChild size="lg" className="w-full sm:w-auto bg-white text-slate-900 hover:bg-slate-100 font-extrabold h-14 px-8 rounded-2xl shadow-xl hover:-translate-y-0.5 transition-all text-base">
-                  <Link href="/marketplace" className="flex items-center justify-center gap-2">
-                    <span>Entrar a UniRent Ahora</span>
-                    <ArrowRight className="h-5 w-5 text-primary" />
-                  </Link>
-                </Button>
+              {/* Top Pill Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold shadow-sm">
+                <Sparkles className="h-4 w-4 text-indigo-400 animate-pulse" />
+                <span>Comunidad 100% Universitaria</span>
+              </div>
 
-                <Button asChild variant="outline" size="lg" className="w-full sm:w-auto border-white/40 text-white hover:bg-white/10 font-bold h-14 px-8 rounded-2xl text-base">
-                  <Link href="/register">Crear una Cuenta</Link>
-                </Button>
+              {/* Title & Subtitle */}
+              <div className="space-y-4 max-w-3xl mx-auto">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
+                  ¿Listo para alquilar o ganar dinero{" "}
+                  <span className="bg-gradient-to-r from-primary via-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                    hoy mismo?
+                  </span>
+                </h2>
+                
+                <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
+                  Únete a la plataforma P2P universitaria más confiable. Explora los artículos disponibles o publica el tuyo en menos de 2 minutos.
+                </p>
+              </div>
+
+              {/* Buttons with Perfect Contrast */}
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+                {/* Primary Button */}
+                <Link 
+                  href="/marketplace" 
+                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white font-extrabold h-14 px-8 rounded-xl shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5 transition-all text-base flex items-center justify-center gap-2.5"
+                >
+                  <span>Entrar a UniRent Ahora</span>
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+
+                {/* Secondary Button - Glassmorphism high contrast */}
+                <Link 
+                  href="/register" 
+                  className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white font-bold h-14 px-8 rounded-xl border border-white/20 hover:border-white/30 backdrop-blur-md transition-all text-base flex items-center justify-center hover:-translate-y-0.5"
+                >
+                  Crear una Cuenta
+                </Link>
+              </div>
+
+              {/* Sub link */}
+              <div className="pt-2 text-xs text-slate-400">
+                ¿Ya tienes una cuenta registrada?{" "}
+                <Link href="/login" className="text-indigo-300 hover:text-white font-semibold underline transition-colors">
+                  Inicia sesión aquí
+                </Link>
               </div>
 
             </div>
