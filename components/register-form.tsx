@@ -32,6 +32,7 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState(1)
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   
   const [universidades, setUniversidades] = useState<Universidad[]>([])
 
@@ -89,14 +90,15 @@ export function RegisterForm() {
     formData.username.trim() !== "" && 
     formData.correo.includes("@");
 
-  // Validación Paso 2 (Campos de seguridad y universidad)
+  // Validación Paso 2 (Campos de seguridad, universidad y aceptación de términos)
   const isStep2Complete = 
     formData.dni.length === 8 && 
     formData.telefono.length === 9 && 
     formData.id_universidad !== "" && 
     formData.codigo_universitario.trim() !== "" && 
     formData.password.length >= 8 && 
-    passwordsMatch;
+    passwordsMatch &&
+    acceptedTerms;
 
   const handleNextStep = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -261,6 +263,29 @@ export function RegisterForm() {
                 <Label htmlFor="reg-confirmPassword">Confirmar *</Label>
                 <Input id="reg-confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} />
               </div>
+            </div>
+
+            {/* Checkbox de Términos y Condiciones */}
+            <div className="flex items-start gap-2.5 pt-3 border-t border-slate-100">
+              <input
+                type="checkbox"
+                id="accept-terms"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer accent-primary"
+              />
+              <label htmlFor="accept-terms" className="text-xs text-slate-600 leading-normal cursor-pointer">
+                He leído y acepto los{" "}
+                <a 
+                  href="/terms" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="font-bold text-primary hover:underline"
+                >
+                  Términos y Condiciones
+                </a>{" "}
+                y las Políticas de Privacidad de UniRent. *
+              </label>
             </div>
 
             <div className="flex gap-3 pt-4">
