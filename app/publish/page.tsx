@@ -16,9 +16,9 @@ export default function PublishPage() {
           {/* Header de la página */}
           <div className="flex flex-col gap-4">
             <Button variant="ghost" className="w-fit -ml-4 gap-2 text-muted-foreground hover:text-foreground" asChild>
-              <a href="/">
+              <a href="/marketplace">
                 <ArrowLeft className="h-4 w-4" />
-                Volver al inicio
+                Volver al Marketplace
               </a>
             </Button>
             

@@ -225,7 +225,7 @@ export function PublishForm() {
         </div>
         <div className="flex gap-3">
           <Button variant="outline" className="rounded-xl" asChild>
-            <a href="/">Ir al inicio</a>
+            <a href="/marketplace">Ir al Marketplace</a>
           </Button>
           <Button
             className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
