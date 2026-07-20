@@ -104,7 +104,10 @@ export function UniRentHeader() {
       <header className="sticky top-0 z-50 w-full border-b border-border bg-white">
         <div className="mx-auto max-w-7xl px-4 lg:px-6 h-16 lg:h-20 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <a href="/" className="text-2xl font-bold tracking-tighter text-foreground">UniRent</a>
+            <a href="/marketplace" className="text-2xl font-bold tracking-tighter text-foreground flex items-center gap-2">
+              <span>UniRent</span>
+              <span className="text-[10px] uppercase font-bold tracking-widest bg-primary/10 text-primary px-2 py-0.5 rounded-full">Marketplace</span>
+            </a>
             
             <div className="hidden md:flex relative w-80 lg:w-96">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -118,6 +121,10 @@ export function UniRentHeader() {
           </div>
 
           <div className="hidden lg:flex items-center gap-3">
+            <Button variant="ghost" className="text-sm font-medium rounded-full px-4" asChild>
+              <a href="/">Ver Landing</a>
+            </Button>
+
             <Button variant="ghost" className="text-sm font-medium rounded-full px-4" asChild>
               <a href={isLoggedIn ? "/publish" : "/login"}>Pon tu artículo para alquiler</a>
             </Button>
