@@ -77,6 +77,19 @@ export function RegisterForm() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     const field = id.replace("reg-", "");
+
+    if (field === "telefono") {
+      const cleanValue = value.replace(/\D/g, "").slice(0, 9);
+      setFormData(prev => ({ ...prev, telefono: cleanValue }));
+      return;
+    }
+
+    if (field === "dni") {
+      const cleanValue = value.replace(/\D/g, "").slice(0, 8);
+      setFormData(prev => ({ ...prev, dni: cleanValue }));
+      return;
+    }
+
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -138,8 +151,17 @@ export function RegisterForm() {
         toast({ title: "¡Éxito!", description: "Usuario registrado correctamente." });
         setTimeout(() => window.location.href = "/login", 1500);
       } else {
-        const msg = data.errors ? Object.values(data.errors).flat().join(" ") : data.message;
-        toast({ variant: "destructive", title: "Error", description: msg || "No se pudo registrar." });
+        let msg = data.message || "No se pudo registrar.";
+        if (data.errors) {
+          const errorList = Object.values(data.errors).flat() as string[];
+          msg = errorList.map(err => {
+            if (err.includes("dni")) return "El DNI ingresado ya existe o es inválido.";
+            if (err.includes("correo")) return "El correo electrónico ya está registrado.";
+            if (err.includes("username")) return "El nombre de usuario ya está registrado.";
+            return err;
+          }).join(" ");
+        }
+        toast({ variant: "destructive", title: "Error de validación", description: msg });
       }
     } catch (error) {
       toast({

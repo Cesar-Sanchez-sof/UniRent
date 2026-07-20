@@ -705,7 +705,7 @@ function ProfileContent() {
                   <div className="space-y-1.5"><Label>Primer Nombre</Label><Input value={formData.primer_nombre} onChange={e => setFormData({ ...formData, primer_nombre: e.target.value })} className="rounded-xl h-11" /></div>
                   <div className="space-y-1.5"><Label>Apellido Paterno</Label><Input value={formData.primer_apellido} onChange={e => setFormData({ ...formData, primer_apellido: e.target.value })} className="rounded-xl h-11" /></div>
                   <div className="space-y-1.5"><Label>Usuario</Label><Input value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} className="rounded-xl h-11" /></div>
-                  <div className="space-y-1.5"><Label>Teléfono</Label><Input maxLength={9} value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value })} className="rounded-xl h-11" /></div>
+                  <div className="space-y-1.5"><Label>Teléfono (9 dígitos)</Label><Input maxLength={9} value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value.replace(/\D/g, "").slice(0, 9) })} className="rounded-xl h-11" placeholder="987654321" /></div>
                   <div className="col-span-1 md:col-span-2 space-y-1.5"><Label>Correo Electrónico</Label><Input value={formData.correo} onChange={e => setFormData({ ...formData, correo: e.target.value })} className="rounded-xl h-11" /></div>
                 </div>
               </div>
