@@ -125,7 +125,7 @@ export default function LandingPage() {
                 </h1>
 
                 <p className="text-lg sm:text-xl text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                  La plataforma P2P donde universitarios alquilan laptops, cámaras, calculadoras científicas, libros y movilidad por días o semanas. Todo con garantía y calificaciones transparentes.
+                  La plataforma P2P donde universitarios alquilan calculadoras científicas, cámaras, libros y material de estudio accesible (máx. S/ 200 soles). Todo con garantía y calificaciones transparentes.
                 </p>
 
                 {/* Primary & Secondary Action CTAs */}
@@ -246,7 +246,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Busca y Elige</h3>
                 <p className="text-slate-600 text-sm leading-relaxed">
-                  Explora el catálogo de laptops, calculadoras, cámaras o transporte cerca de ti. Filtra por disponibilidad de fechas y precios.
+                  Explora el catálogo de calculadoras científicas, cámaras, libros y material de estudio cerca de ti (máx. S/ 200). Filtra por disponibilidad de fechas y precios.
                 </p>
                 <div className="pt-2 flex items-center gap-2 text-xs font-bold text-indigo-600">
                   <Search className="h-4 w-4" /> Filtros por fecha en tiempo real
@@ -368,51 +368,33 @@ export default function LandingPage() {
               </Button>
             </div>
 
-            <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6">
               
               {/* Category 1 */}
               <Link href="/marketplace" className="group bg-slate-50 hover:bg-primary/5 border border-slate-200/80 hover:border-primary/40 rounded-2xl p-6 text-center space-y-3 transition-all">
                 <div className="h-14 w-14 rounded-2xl bg-white shadow-sm group-hover:scale-110 flex items-center justify-center mx-auto text-primary transition-transform">
-                  <Laptop className="h-7 w-7" />
+                  <Zap className="h-7 w-7" />
                 </div>
-                <div className="font-bold text-slate-900 text-sm group-hover:text-primary">Tecnología & Laptops</div>
-                <div className="text-xs text-slate-500">Laptops, Tablets, Gadgets</div>
+                <div className="font-bold text-slate-900 text-sm group-hover:text-primary">Tecnología & Gadgets</div>
+                <div className="text-xs text-slate-500">Calculadoras, Adaptadores, Cables (Máx. S/ 200)</div>
               </Link>
 
               {/* Category 2 */}
               <Link href="/marketplace" className="group bg-slate-50 hover:bg-primary/5 border border-slate-200/80 hover:border-primary/40 rounded-2xl p-6 text-center space-y-3 transition-all">
-                <div className="h-14 w-14 rounded-2xl bg-white shadow-sm group-hover:scale-110 flex items-center justify-center mx-auto text-indigo-600 transition-transform">
-                  <Camera className="h-7 w-7" />
+                <div className="h-14 w-14 rounded-2xl bg-white shadow-sm group-hover:scale-110 flex items-center justify-center mx-auto text-emerald-600 transition-transform">
+                  <BookOpen className="h-7 w-7" />
                 </div>
-                <div className="font-bold text-slate-900 text-sm group-hover:text-indigo-600">Fotografía & Audiovisual</div>
-                <div className="text-xs text-slate-500">Cámaras, Micrófonos, Luces</div>
+                <div className="font-bold text-slate-900 text-sm group-hover:text-emerald-600">Libros & Guías</div>
+                <div className="text-xs text-slate-500">Textos Universitarios, Apuntes, Manuales</div>
               </Link>
 
               {/* Category 3 */}
               <Link href="/marketplace" className="group bg-slate-50 hover:bg-primary/5 border border-slate-200/80 hover:border-primary/40 rounded-2xl p-6 text-center space-y-3 transition-all">
-                <div className="h-14 w-14 rounded-2xl bg-white shadow-sm group-hover:scale-110 flex items-center justify-center mx-auto text-emerald-600 transition-transform">
-                  <BookOpen className="h-7 w-7" />
+                <div className="h-14 w-14 rounded-2xl bg-white shadow-sm group-hover:scale-110 flex items-center justify-center mx-auto text-indigo-600 transition-transform">
+                  <Camera className="h-7 w-7" />
                 </div>
-                <div className="font-bold text-slate-900 text-sm group-hover:text-emerald-600">Libros & Calculadoras</div>
-                <div className="text-xs text-slate-500">TI-Nspire, Textos de Ingeniería</div>
-              </Link>
-
-              {/* Category 4 */}
-              <Link href="/marketplace" className="group bg-slate-50 hover:bg-primary/5 border border-slate-200/80 hover:border-primary/40 rounded-2xl p-6 text-center space-y-3 transition-all">
-                <div className="h-14 w-14 rounded-2xl bg-white shadow-sm group-hover:scale-110 flex items-center justify-center mx-auto text-amber-600 transition-transform">
-                  <Bike className="h-7 w-7" />
-                </div>
-                <div className="font-bold text-slate-900 text-sm group-hover:text-amber-600">Movilidad Urbana</div>
-                <div className="text-xs text-slate-500">Scooters, Bicicletas</div>
-              </Link>
-
-              {/* Category 5 */}
-              <Link href="/marketplace" className="group bg-slate-50 hover:bg-primary/5 border border-slate-200/80 hover:border-primary/40 rounded-2xl p-6 text-center space-y-3 transition-all col-span-2 sm:col-span-1">
-                <div className="h-14 w-14 rounded-2xl bg-white shadow-sm group-hover:scale-110 flex items-center justify-center mx-auto text-purple-600 transition-transform">
-                  <Zap className="h-7 w-7" />
-                </div>
-                <div className="font-bold text-slate-900 text-sm group-hover:text-purple-600">Herramientas & Lab</div>
-                <div className="text-xs text-slate-500">Equipos de Prototipado</div>
+                <div className="font-bold text-slate-900 text-sm group-hover:text-indigo-600">Fotografía & Equipos</div>
+                <div className="text-xs text-slate-500">Cámaras sencillas, Trípodes, Micrófonos</div>
               </Link>
 
             </div>
