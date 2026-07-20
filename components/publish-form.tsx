@@ -156,13 +156,16 @@ export function PublishForm() {
     }
   }
 
+  const priceNum = parseFloat(pricePerDay)
   const isValid =
     images.length >= 1 &&
     title.trim().length > 3 &&
     description.trim().length > 10 &&
     category &&
     condition &&
-    pricePerDay &&
+    !isNaN(priceNum) &&
+    priceNum > 0 &&
+    priceNum <= 200 &&
     idDistrito
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -417,8 +420,12 @@ export function PublishForm() {
                   className="h-12 pl-11 rounded-xl border-border bg-card text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary"
                   required
                   min={1}
+                  max={200}
                 />
               </div>
+              <span className="text-[11px] text-amber-600 font-medium">
+                * Máx. S/ 200/día. Laptops y Tablets no están permitidas por políticas de seguridad.
+              </span>
             </div>
 
             {/* Insurance Info - Automatic */}

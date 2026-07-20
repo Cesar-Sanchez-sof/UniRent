@@ -80,16 +80,32 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* CLÁUSULA 3 */}
+            {/* CLÁUSULA 3 - LÍMITE DE TARIFA Y ARTÍCULOS PROHIBIDOS */}
+            <section className="space-y-3 bg-red-50/60 p-6 rounded-2xl border border-red-200/80">
+              <div className="flex items-center gap-2 text-lg font-bold text-red-900">
+                <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
+                <h2>3. Límite de Tarifa (S/ 200) y Artículos Prohibidos (Laptops y Tablets)</h2>
+              </div>
+              <p className="text-red-950 text-sm sm:text-base leading-relaxed">
+                UniRent es un marketplace pensado para el acceso económico y seguro entre universitarios. Por políticas de seguridad de la plataforma:
+              </p>
+              <ul className="list-disc pl-5 space-y-2 text-red-900 text-xs sm:text-sm">
+                <li><strong>Límite Máximo de Tarifa:</strong> El precio de alquiler por día no podrá exceder de <strong>S/ 200 soles</strong>.</li>
+                <li><strong>Artículos Estrictamente Prohibidos:</strong> Queda prohibida la publicación y alquiler de <strong>Laptops, Tablets, computadoras portátiles o cualquier dispositivo de costo elevado superior a S/ 200 soles</strong>.</li>
+                <li><strong>Baja Automática:</strong> La administración se reserva la facultad de eliminar inmediatamente y sin previo aviso cualquier publicación que supere este límite de precio o incluya artículos restringidos.</li>
+              </ul>
+            </section>
+
+            {/* CLÁUSULA 4 */}
             <section className="space-y-3">
               <div className="flex items-center gap-2 text-lg font-bold text-slate-900">
                 <ShieldCheck className="h-5 w-5 text-indigo-600 shrink-0" />
-                <h2>3. Obligaciones de los Usuarios y Conducta Ética</h2>
+                <h2>4. Obligaciones de los Usuarios y Conducta Ética</h2>
               </div>
               <p>Al registrarse en UniRent, todo usuario se compromete bajo declaración jurada a:</p>
               <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm">
                 <li>Proporcionar información veraz, incluyendo DNI, código universitario y teléfono activo.</li>
-                <li>Publicar únicamente artículos de su propiedad legal o sobre los cuales posea autorización expresa para su alquiler.</li>
+                <li>Publicar únicamente artículos permitidos (calculadoras, libros, cámaras sencillas y material de estudio accesible menor a S/ 200).</li>
                 <li>Entregar los artículos en óptimo estado funcional y limpio, y devolverlos en las mismas condiciones al finalizar el servicio.</li>
                 <li>Mantener una conducta respetuosa, ética y libre de acoso, difamación o engaño dentro del sistema de opiniones y notificaciones.</li>
               </ul>
