@@ -5,11 +5,7 @@ import {
   Monitor,
   BookOpen,
   Camera,
-  Wrench,
-  Palette,
-  Dumbbell,
   LayoutGrid,
-  ChevronDown
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -18,9 +14,6 @@ const categories = [
   { id: 1, name: "Tecnología", icon: Monitor },
   { id: 2, name: "Libros", icon: BookOpen },
   { id: 3, name: "Fotografía", icon: Camera },
-  { id: 5, name: "Ingeniería", icon: Wrench },
-  { id: 4, name: "Arte", icon: Palette },
-  { id: 6, name: "Deporte", icon: Dumbbell },
 ]
 
 interface CategoryFiltersProps {
