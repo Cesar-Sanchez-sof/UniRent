@@ -105,7 +105,7 @@ export default function TermsPage() {
               <p>Al registrarse en UniRent, todo usuario se compromete bajo declaración jurada a:</p>
               <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm">
                 <li>Proporcionar información veraz, incluyendo DNI, código universitario y teléfono activo.</li>
-                <li>Publicar únicamente artículos permitidos (calculadoras, libros, cámaras sencillas y material de estudio accesible < S/ 200).</li>
+                <li>Publicar únicamente artículos permitidos (calculadoras, libros, cámaras sencillas y material de estudio accesible menor a S/ 200).</li>
                 <li>Entregar los artículos en óptimo estado funcional y limpio, y devolverlos en las mismas condiciones al finalizar el servicio.</li>
                 <li>Mantener una conducta respetuosa, ética y libre de acoso, difamación o engaño dentro del sistema de opiniones y notificaciones.</li>
               </ul>
