@@ -56,7 +56,7 @@ class AuthController extends Controller
                 'dni'              => $request->dni,
                 'codigo_universitario' => $request->codigo_universitario,
                 'id_universidad'   => $request->id_universidad,
-                'incidencias'      => 0,
+                'deuda'            => 0.00,
                 'puntaje_dueno'    => 5.0,
                 'puntaje_arrendador' => 5.0,
                 'numero_alquileres' => 0,
