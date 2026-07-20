@@ -92,7 +92,7 @@ export function UniRentHeader() {
     localStorage.removeItem('user')
     setIsLoggedIn(false)
     setUserData(null)
-    window.location.href = "/"
+    window.location.href = "/marketplace"
   }
 
   const handleSearch = (value: string) => {
