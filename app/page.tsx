@@ -28,6 +28,13 @@ export default function LandingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
+    // Si la app se abre desde la PWA instalada, redirigir directo al Marketplace
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
+    if (isPWA) {
+      window.location.replace('/marketplace');
+      return;
+    }
+
     const token = localStorage.getItem('auth_token')
     if (token) setIsLoggedIn(true)
   }, [])
@@ -654,8 +661,8 @@ export default function LandingPage() {
             <div className="font-bold text-white text-xs uppercase tracking-wider">Legal & Seguridad</div>
             <ul className="space-y-2 text-xs">
               <li><a href="#seguridad" className="hover:text-white transition-colors">Sistema de Garantía</a></li>
-              <li><a href="#como-funciona" className="hover:text-white transition-colors">Términos de Servicio</a></li>
-              <li><a href="#beneficios" className="hover:text-white transition-colors">Políticas de Privacidad</a></li>
+              <li><Link href="/terms" className="hover:text-white transition-colors font-medium text-slate-300">Términos y Condiciones</Link></li>
+              <li><Link href="/terms" className="hover:text-white transition-colors">Políticas de Privacidad</Link></li>
             </ul>
           </div>
 

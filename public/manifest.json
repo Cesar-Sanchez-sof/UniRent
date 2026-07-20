@@ -2,7 +2,7 @@
   "name": "UniRent",
   "short_name": "UniRent",
   "description": "Alquiler de equipos y servicios",
-  "start_url": "/",
+  "start_url": "/marketplace",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
