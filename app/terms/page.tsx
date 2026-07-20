@@ -60,24 +60,20 @@ export default function TermsPage() {
               </p>
             </section>
 
-            {/* CLÁUSULA 2 - PROTECCIÓN Y DESLINDE DE RESPONSABILIDAD DE LA ADMINISTRACIÓN */}
-            <section className="space-y-3 bg-amber-50/60 p-6 rounded-2xl border border-amber-200/80">
-              <div className="flex items-center gap-2 text-lg font-bold text-amber-900">
-                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
-                <h2>2. Exención y Limitación de Responsabilidad de la Administración</h2>
+            {/* CLÁUSULA 2 - INVESTIGACIÓN, RESPONSABILIDAD Y GENERACIÓN DE DEUDA */}
+            <section className="space-y-3 bg-indigo-50/60 p-6 rounded-2xl border border-indigo-200/80">
+              <div className="flex items-center gap-2 text-lg font-bold text-indigo-950">
+                <ShieldCheck className="h-5 w-5 text-indigo-600 shrink-0" />
+                <h2>2. Investigación de Incidencias, Responsabilidad y Generación de Deuda</h2>
               </div>
-              <p className="text-amber-950 text-sm sm:text-base">
-                La administración y propietarios titulares de la plataforma <strong>UniRent quedan expresamente eximidos de cualquier responsabilidad civil, penal, laboral, tributaria o patrimonial</strong> por:
+              <p className="text-indigo-950 text-sm sm:text-base leading-relaxed">
+                UniRent protege la integridad de los bienes de nuestra comunidad estudiantil. Ante cualquier reporte de daño, avería, no devolución o pérdida de un artículo durante el alquiler:
               </p>
-              <ul className="list-disc pl-5 space-y-2 text-amber-900 text-xs sm:text-sm">
-                <li>Daños físicos, fallas mecánicas, averías o defectos preexistentes u ocasionados a los artículos alquilados durante o después del período de servicio.</li>
-                <li>Pérdida, hurto, robo o no devolución del producto por parte del arrendatario o terceros.</li>
-                <li>Uso indebido, ilícito o peligroso de los objetos alquilados a través de la plataforma.</li>
-                <li>Incumplimiento de pactos personales, entregas fuera de fecha o disputas entre arrendador y arrendatario.</li>
+              <ul className="list-disc pl-5 space-y-2 text-indigo-900 text-xs sm:text-sm">
+                <li><strong>Investigación por la Administración:</strong> Los administradores de UniRent llevarán a cabo una investigación exhaustiva e imparcial analizando las evidencias digitales, fotografías pre/post alquiler y testimonios de ambas partes.</li>
+                <li><strong>Asignación de Responsabilidad y Generación de Deuda:</strong> Si de la investigación se determina la culpabilidad o negligencia de un usuario, <strong>se le generará automáticamente una deuda formal en la plataforma al usuario agraviador</strong>, equivalente al valor de reparación o reposición del bien afectado.</li>
+                <li><strong>Obligatoriedad de Pago:</strong> La deuda generada deberá ser saldada de forma obligatoria para restituir el valor al propietario agraviado.</li>
               </ul>
-              <p className="text-xs text-amber-900 font-semibold pt-2">
-                * La responsabilidad directa recae únicamente sobre las partes contratantes (el usuario dueño y el usuario arrendatario).
-              </p>
             </section>
 
             {/* CLÁUSULA 3 - LÍMITE DE TARIFA Y ARTÍCULOS PROHIBIDOS */}
@@ -96,10 +92,10 @@ export default function TermsPage() {
               </ul>
             </section>
 
-            {/* CLÁUSULA 4 */}
+            {/* CLÁUSULA 4 - OBLIGACIONES Y CONDUCTA */}
             <section className="space-y-3">
               <div className="flex items-center gap-2 text-lg font-bold text-slate-900">
-                <ShieldCheck className="h-5 w-5 text-indigo-600 shrink-0" />
+                <Building className="h-5 w-5 text-indigo-600 shrink-0" />
                 <h2>4. Obligaciones de los Usuarios y Conducta Ética</h2>
               </div>
               <p>Al registrarse en UniRent, todo usuario se compromete bajo declaración jurada a:</p>
@@ -111,51 +107,42 @@ export default function TermsPage() {
               </ul>
             </section>
 
-            {/* CLÁUSULA 4 */}
+            {/* CLÁUSULA 5 - FONDO DE GARANTÍA */}
             <section className="space-y-3">
               <div className="flex items-center gap-2 text-lg font-bold text-slate-900">
                 <Lock className="h-5 w-5 text-emerald-600 shrink-0" />
-                <h2>4. Fondo de Garantía (30%) y Gestión de Cancelaciones</h2>
+                <h2>5. Fondo de Garantía (30%) y Gestión de Cancelaciones</h2>
               </div>
               <p>
                 Para proteger la seriedad de las solicitudes, el sistema calcula automáticamente un monto del 30% en concepto de garantía sobre el subtotal de días de alquiler.
               </p>
               <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm">
                 <li>Si una solicitud es rechazada o cancelada, las fechas se liberan automáticamente en la plataforma.</li>
-                <li>En caso de traslapes o incumplimientos comprobados, la administración se reserva el derecho de aplicar retenciones administrativas conforme a las políticas del servicio.</li>
+                <li>En caso de traslapes o incumplimientos comprobados, la administración aplicará las retenciones administrativas correspondientes.</li>
               </ul>
             </section>
 
-            {/* CLÁUSULA 5 - DERECHOS DEL DUEÑO DE LA PLATAFORMA */}
-            <section className="space-y-3">
-              <div className="flex items-center gap-2 text-lg font-bold text-slate-900">
-                <DollarSign className="h-5 w-5 text-blue-600 shrink-0" />
-                <h2>5. Tarifas, Comisiones y Propiedad Intelectual</h2>
+            {/* CLÁUSULA 6 - SISTEMA DE 3 INFRACCIONES (STRIKES) Y SUSPENSIÓN PERMANENTE */}
+            <section className="space-y-3 bg-slate-900 text-white p-6 rounded-2xl shadow-md border border-slate-800">
+              <div className="flex items-center gap-2 text-lg font-bold text-amber-400">
+                <Scale className="h-5 w-5 text-amber-400 shrink-0" />
+                <h2>6. Política de 3 Infracciones (Sistema de Strikes) y Suspensión Definitiva</h2>
               </div>
-              <p>
-                La administración de UniRent se reserva el derecho de establecer o modificar comisiones por servicio de intermediación tecnológica, mantenimiento de software y procesamiento de transacciones.
+              <p className="text-slate-200 text-sm leading-relaxed">
+                Para mantener la confianza y seguridad de la comunidad universitaria, UniRent aplica una norma estricta de <strong>máximo tres (3) infracciones por usuario</strong>:
               </p>
-              <p>
-                Todos los derechos de propiedad intelectual, marcas, prototipo de alta fidelidad, logotipo, diseño de interfaz y código fuente son propiedad exclusiva de la titularidad de UniRent. Queda estrictamente prohibida su reproducción no autorizada.
-              </p>
+              <ul className="list-disc pl-5 space-y-2 text-slate-300 text-xs sm:text-sm">
+                <li><strong>Constituye Infracción:</strong> El retraso en la devolución de un artículo, la generación de deudas por daños o pérdidas, la acumulación de calificaciones bajas (&lt; 3.0 stars), o el maltrato verbal/difamatorio.</li>
+                <li><strong>Acumulación de 3 Infracciones:</strong> Al incurrir en su <strong>tercera (3ª) infracción, el usuario será sancionado con la expulsión y bloqueo permanente de su cuenta de forma inapelable</strong>.</li>
+                <li><strong>Prohibición Definitiva:</strong> No existirá posibilidad ni excepción alguna de reactivación; el usuario quedará inhabilitado de por vida para volver a alquilar o poner bienes en alquiler en UniRent.</li>
+              </ul>
             </section>
 
-            {/* CLÁUSULA 6 */}
-            <section className="space-y-3">
-              <div className="flex items-center gap-2 text-lg font-bold text-slate-900">
-                <Scale className="h-5 w-5 text-purple-600 shrink-0" />
-                <h2>6. Suspensión de Cuentas y Cancelación Unilateral</h2>
-              </div>
-              <p>
-                UniRent se reserva la facultad de <strong>suspender, bloquear o eliminar unilateralmente la cuenta de cualquier usuario</strong> que acumule calificaciones deficientes, cometa fraude, suplante identidades o viole los presentes términos, sin derecho a indemnización.
-              </p>
-            </section>
-
-            {/* CLÁUSULA 7 */}
+            {/* CLÁUSULA 7 - ACEPTACIÓN */}
             <section className="space-y-3 border-t border-slate-100 pt-6">
-              <h2 className="text-lg font-bold text-slate-900">7. Aceptación Expresa</h2>
+              <h2 className="text-lg font-bold text-slate-900">7. Aceptación Expresa y Vinculante</h2>
               <p className="text-xs sm:text-sm text-slate-600">
-                Al marcar la casilla *"Acepto los Términos y Condiciones"* durante el proceso de registro, el usuario declara haber leído, comprendido y aceptado en su totalidad las cláusulas legales y éticas aquí estipuladas.
+                Al marcar la casilla *"Acepto los Términos y Condiciones"* durante el registro, el usuario declara haber leído, comprendido y aceptado la investigación de incidencias, la asignación de deudas al agraviador y la suspensión definitiva tras la 3ª infracción.
               </p>
             </section>
 
