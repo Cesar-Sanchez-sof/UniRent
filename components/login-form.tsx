@@ -56,9 +56,9 @@ export function LoginForm() {
           description: "Has iniciado sesión correctamente.",
         })
 
-        // Redirección inmediata al Home
+        // Redirección inmediata al Marketplace
         setTimeout(() => {
-          window.location.href = "/"
+          window.location.href = "/marketplace"
         }, 500)
       } else {
         toast({
