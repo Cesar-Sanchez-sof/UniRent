@@ -29,9 +29,9 @@ export function CategoryFilters({ onCategoryChange }: CategoryFiltersProps) {
   }
 
   return (
-    <nav aria-label="Filtros de categoría" className="border-b border-border bg-white sticky top-[64px] lg:top-[72px] z-10 shadow-sm overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4 lg:px-6 relative">
-        <div className="flex items-center gap-4 sm:gap-6 lg:gap-10 overflow-x-auto scrollbar-none py-3 lg:py-4">
+    <nav aria-label="Filtros de categoría" className="border-b border-border bg-white sticky top-[60px] sm:top-[64px] lg:top-[72px] z-10 shadow-sm overflow-hidden">
+      <div className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-6 relative">
+        <div className="flex items-center justify-around sm:justify-center gap-1 sm:gap-6 lg:gap-10 overflow-x-auto scrollbar-none py-2.5 sm:py-3 lg:py-4">
           {categories.map((cat) => {
             const Icon = cat.icon
             const isActive = activeId === cat.id
@@ -40,20 +40,20 @@ export function CategoryFilters({ onCategoryChange }: CategoryFiltersProps) {
                 key={cat.name}
                 onClick={() => handleSelect(cat.id)}
                 className={cn(
-                  "flex flex-col items-center gap-1.5 min-w-[70px] sm:min-w-fit pb-1 border-b-2 transition-all cursor-pointer group",
+                  "flex flex-col items-center gap-1 shrink-0 px-2 sm:px-3 pb-1 border-b-2 transition-all cursor-pointer group",
                   isActive
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
               >
                 <div className={cn(
-                  "p-2 sm:p-2.5 rounded-xl transition-colors",
+                  "p-1.5 sm:p-2.5 rounded-xl transition-colors",
                   isActive ? "bg-primary/10" : "group-hover:bg-secondary"
                 )}>
                   <Icon className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={isActive ? 2 : 1.5} />
                 </div>
                 <span className={cn(
-                  "text-[10px] sm:text-[11px] font-bold uppercase tracking-tight whitespace-nowrap", 
+                  "text-[10px] sm:text-[11px] font-bold uppercase tracking-tight whitespace-nowrap text-center", 
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}>
                   {cat.name}
