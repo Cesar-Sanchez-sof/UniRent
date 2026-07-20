@@ -79,8 +79,8 @@ export function ProductGrid({ onProductClick, selectedCategoryId, searchTerm }: 
   }
 
   return (
-    <section aria-label="Resultados de productos" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
-      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8 sm:gap-6 lg:gap-8">
+    <section aria-label="Resultados de productos" className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-10">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
         {products.map((product) => (
           <ProductCard
             key={product.id_publicacion}

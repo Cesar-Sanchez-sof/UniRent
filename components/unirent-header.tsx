@@ -252,6 +252,19 @@ export function UniRentHeader() {
             </div>
           </button>
         </div>
+
+        {/* Barra de Búsqueda Móvil */}
+        <div className="block md:hidden px-4 pb-3 pt-1 border-t border-slate-100/80 bg-white">
+          <div className="relative w-full">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input 
+              type="text" 
+              placeholder="¿Qué estás buscando en UniRent?" 
+              className="w-full h-9.5 pl-10 pr-4 rounded-full bg-secondary/80 border-none text-xs sm:text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+              onChange={(e) => handleSearch(e.target.value)}
+            />
+          </div>
+        </div>
       </header>
 
       {/* MOBILE MENU OVERLAY */}
