@@ -92,6 +92,21 @@ export function PublishForm() {
   
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
+  // Verificar autenticación al ingresar
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      toast({
+        variant: "destructive",
+        title: "Sesión requerida",
+        description: "Por favor inicia sesión con tu cuenta universitaria para publicar un artículo.",
+      })
+      setTimeout(() => {
+        window.location.href = "/login"
+      }, 1500)
+    }
+  }, [])
+
   // Cargar Departamentos al iniciar
   useEffect(() => {
     const loadDepts = async () => {
@@ -170,10 +185,23 @@ export function PublishForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!isValid) return
+    if (!isValid) {
+      toast({
+        variant: "destructive",
+        title: "Formulario incompleto",
+        description: "Por favor completa todos los campos requeridos (*), incluyendo al menos 1 foto y la ubicación.",
+      })
+      return
+    }
+
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      toast({ variant: "destructive", title: "Sesión requerida", description: "Inicia sesión para publicar." })
+      setTimeout(() => window.location.href = "/login", 1000)
+      return
+    }
 
     setIsLoading(true)
-    const token = localStorage.getItem('auth_token')
 
     try {
       const formData = new FormData()
@@ -182,7 +210,7 @@ export function PublishForm() {
       formData.append('precio_dia', pricePerDay)
       formData.append('condicion', condition)
       formData.append('id_categoria', category)
-      formData.append('id_distrito', idDistrito) // Enviamos el ID real
+      formData.append('id_distrito', idDistrito)
 
       images.forEach((img, index) => {
         formData.append(`imagenes[${index}]`, img.file)
@@ -196,6 +224,12 @@ export function PublishForm() {
         },
         body: formData
       })
+
+      if (response.status === 401) {
+        toast({ variant: "destructive", title: "Sesión expirada", description: "Tu sesión ha caducado. Por favor inicia sesión nuevamente." })
+        setTimeout(() => window.location.href = "/login", 1500)
+        return
+      }
 
       const data = await response.json()
 
