@@ -71,6 +71,7 @@ class PublicacionController extends Controller
             $user = $request->user();
             $publicaciones = Publicacion::with(['imagenes', 'categoria', 'distrito', 'usuario'])
                 ->where('id_usuario', $user->id_usuario)
+                ->where('estado', true)
                 ->orderBy('id_publicacion', 'desc')
                 ->get();
 

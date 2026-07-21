@@ -473,12 +473,62 @@ function ProfileContent() {
                 </div>
                 {isPubsLoading ? <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">{[1, 2, 3].map(i => <div key={i} className="aspect-square bg-muted animate-pulse rounded-2xl" />)}</div> : myPublications.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {myPublications.map(pub => (
-                      <div key={pub.id_publicacion} className="relative group">
-                        <ProductCard title={pub.titulo} images={pub.imagenes?.length > 0 ? pub.imagenes.map((img: any) => img.url_photo) : ["/placeholder.jpg"]} distance={pub.distrito?.nombre || "Lima"} pricePerDay={Number(pub.precio_dia)} trustScore={Number(pub.usuario?.puntaje_dueno) || 5.0} verified={pub.estado} onClick={() => { }} onEdit={() => handleEditClick(pub)} />
-                        <div className="absolute top-3 right-14 z-30 opacity-0 group-hover:opacity-100 transition-all transform translate-y-[-5px] group-hover:translate-y-0"><button onClick={(e) => { e.stopPropagation(); handleDeletePublication(pub.id_publicacion); }} className="bg-white/90 backdrop-blur-md text-destructive p-2 rounded-xl shadow-lg hover:bg-destructive hover:text-white transition-all"><Trash2 className="h-4 w-4" /></button></div>
-                      </div>
-                    ))}
+                    {myPublications.map(pub => {
+                      const imgUrl = pub.imagenes?.[0]?.url_photo || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80";
+                      return (
+                        <div key={pub.id_publicacion} className="bg-card rounded-2xl border border-border overflow-hidden shadow-sm flex flex-col bg-white hover:shadow-md transition-all">
+                          <div className="relative aspect-square bg-muted">
+                            <img
+                              src={imgUrl}
+                              alt={pub.titulo}
+                              className="w-full h-full object-cover"
+                              onError={(e: any) => {
+                                e.target.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80";
+                              }}
+                            />
+                            <span className={cn("absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase shadow-sm", pub.estado ? "bg-green-500 text-white" : "bg-gray-500 text-white")}>
+                              {pub.estado ? "Activo" : "Inactivo"}
+                            </span>
+                          </div>
+
+                          <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                              <h4 className="font-bold text-base line-clamp-1">{pub.titulo}</h4>
+                              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                <MapPin className="h-3 w-3 text-primary" /> {pub.distrito?.nombre || "Trujillo"}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                              <div>
+                                <span className="text-[10px] text-muted-foreground uppercase font-bold">Precio / Día</span>
+                                <p className="text-base font-black text-primary">S/ {formatPrice(Number(pub.precio_dia))}</p>
+                              </div>
+
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleEditClick(pub)}
+                                  className="rounded-xl h-8 px-3 text-xs gap-1.5 border-border"
+                                >
+                                  <Edit2 className="h-3.5 w-3.5" /> Editar
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeletePublication(pub.id_publicacion)}
+                                  className="rounded-xl h-8 px-3 text-xs gap-1.5 bg-red-600 hover:bg-red-700 text-white"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" /> Eliminar
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : <div className="bg-card rounded-2xl border border-border p-12 text-center shadow-sm bg-white"><Package className="h-12 w-12 text-primary/20 mx-auto mb-4" /><p className="text-muted-foreground">No tienes artículos.</p></div>}
               </div>
