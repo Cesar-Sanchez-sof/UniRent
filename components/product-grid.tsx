@@ -84,8 +84,18 @@ export function ProductGrid({ onProductClick, selectedCategoryId, searchTerm }: 
           <Package className="h-10 w-10 text-muted-foreground/40" />
         </div>
         <div>
-          <h3 className="text-xl font-bold">No hay artículos disponibles</h3>
-          <p className="text-muted-foreground max-w-xs mx-auto text-sm mt-1">Parece que por ahora no hay publicaciones de otros estudiantes en tu zona.</p>
+          <h3 className="text-xl font-bold">No hay publicaciones de otros estudiantes</h3>
+          <p className="text-muted-foreground max-w-sm mx-auto text-sm mt-1 leading-relaxed">
+            Por ahora no hay publicaciones de otros usuarios disponibles para alquilar. Tus artículos publicados se gestionan en tu perfil.
+          </p>
+          <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center">
+            <a href="/profile?tab=publications" className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-[#1e5d8c] text-white text-xs font-bold shadow-md hover:bg-[#164a6d] transition-all">
+              Ver Mis Publicaciones
+            </a>
+            <a href="/publish" className="inline-flex items-center justify-center h-11 px-5 rounded-xl border border-border text-foreground text-xs font-bold hover:bg-secondary transition-all">
+              Publicar un Artículo
+            </a>
+          </div>
         </div>
       </div>
     )

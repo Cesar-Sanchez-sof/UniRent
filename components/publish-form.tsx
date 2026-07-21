@@ -119,12 +119,12 @@ export function PublishForm() {
   };
 
   const [departamentos, setDepartamentos] = useState<any[]>(defaultDepts)
-  const [provincias, setProvincias] = useState<any[]>(defaultProvsMap["13"])
-  const [distritos, setDistritos] = useState<any[]>(defaultDistsMap["1301"])
+  const [provincias, setProvincias] = useState<any[]>([])
+  const [distritos, setDistritos] = useState<any[]>([])
 
-  const [idDepartamento, setIdDepartamento] = useState("13")
-  const [idProvincia, setIdProvincia] = useState("1301")
-  const [idDistrito, setIdDistrito] = useState("130110")
+  const [idDepartamento, setIdDepartamento] = useState("")
+  const [idProvincia, setIdProvincia] = useState("")
+  const [idDistrito, setIdDistrito] = useState("")
   
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
@@ -317,17 +317,21 @@ export function PublishForm() {
           <Check className="h-8 w-8 text-accent" />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Artículo publicado</h2>
+          <h2 className="text-2xl font-bold text-foreground">¡Artículo publicado con éxito!</h2>
           <p className="text-muted-foreground mt-2 max-w-sm">
-            Tu artículo está ahora visible para todos los estudiantes de tu campus.
+            Tu artículo ha sido registrado. Recuerda que tus publicaciones se gestionan en tu perfil.
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button className="rounded-xl bg-[#1e5d8c] text-white hover:bg-[#164a6d] font-bold" asChild>
+            <a href="/profile?tab=publications">Ver en Mis Publicaciones</a>
+          </Button>
           <Button variant="outline" className="rounded-xl" asChild>
             <a href="/marketplace">Ir al Marketplace</a>
           </Button>
           <Button
-            className="rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+            variant="ghost"
+            className="rounded-xl"
             onClick={() => {
               setIsPublished(false)
               setImages([])
@@ -336,8 +340,9 @@ export function PublishForm() {
               setCategory("")
               setCondition("")
               setPricePerDay("")
-              setDeposit("")
-              setLocation("")
+              setIdDepartamento("")
+              setIdProvincia("")
+              setIdDistrito("")
             }}
           >
             Publicar otro
