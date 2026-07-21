@@ -96,17 +96,19 @@ class AlquilerController extends Controller
             // Actualizar el estado
             $alquiler->update(['estado' => $nuevoEstado]);
 
-            // Notificaciones
-            $targetUserId = ($esDueno) ? $alquiler->id_usuario_cliente : $alquiler->publicacion->id_usuario;
-            $targetRole = ($esDueno) ? "dueño" : "cliente";
+            // Notificaciones (opcional)
+            try {
+                $targetUserId = ($esDueno) ? $alquiler->id_usuario_cliente : $alquiler->publicacion->id_usuario;
+                $targetRole = ($esDueno) ? "dueño" : "cliente";
 
-            \App\Models\Notificacion::create([
-                'id_usuario' => $targetUserId,
-                'id_alquiler' => $alquiler->id_alquiler,
-                'titulo' => 'Actualización de Alquiler',
-                'mensaje' => "El {$targetRole} ha marcado '{$alquiler->publicacion->titulo}' como: {$nuevoEstado}.",
-                'leido' => false
-            ]);
+                \App\Models\Notificacion::create([
+                    'id_usuario' => $targetUserId,
+                    'id_alquiler' => $alquiler->id_alquiler,
+                    'titulo' => 'Actualización de Alquiler',
+                    'mensaje' => "El {$targetRole} ha marcado '{$alquiler->publicacion->titulo}' como: {$nuevoEstado}.",
+                    'leido' => false
+                ]);
+            } catch (\Throwable $notifErr) {}
 
             \Illuminate\Support\Facades\DB::commit();
 
@@ -219,14 +221,16 @@ class AlquilerController extends Controller
                 'estado' => 'Pendiente'
             ]);
 
-            // Notificar al DUEÑO
-            \App\Models\Notificacion::create([
-                'id_usuario' => $idDueno,
-                'id_alquiler' => $alquiler->id_alquiler,
-                'titulo' => 'Nueva Solicitud Recibida',
-                'mensaje' => "{$user->primer_nombre} quiere alquilar tu '{$publicacion->titulo}'.",
-                'leido' => false
-            ]);
+            // Notificar al DUEÑO (opcional)
+            try {
+                \App\Models\Notificacion::create([
+                    'id_usuario' => $idDueno,
+                    'id_alquiler' => $alquiler->id_alquiler,
+                    'titulo' => 'Nueva Solicitud Recibida',
+                    'mensaje' => "{$user->primer_nombre} quiere alquilar tu '{$publicacion->titulo}'.",
+                    'leido' => false
+                ]);
+            } catch (\Throwable $notifErr) {}
 
             return response()->json([
 
