@@ -95,17 +95,9 @@ class PublicacionController extends Controller
                 return response()->json(['message' => 'Usuario no autenticado.'], 401);
             }
 
-            $userId = $user->id_usuario ?? $user->id;
+            $userId = $user->id_usuario;
             if (!$userId) {
                 return response()->json(['message' => 'ID de usuario no válido.'], 401);
-            }
-
-            // Validar que el id_usuario exista en la tabla usuario para prevenir violación de clave foránea en Postgres
-            if (!DB::table('usuario')->where('id_usuario', $userId)->exists()) {
-                $fallbackUserId = DB::table('usuario')->value('id_usuario');
-                if ($fallbackUserId) {
-                    $userId = $fallbackUserId;
-                }
             }
 
             $validator = Validator::make($request->all(), [
