@@ -209,27 +209,30 @@ export function UniRentHeader() {
                         <p className="text-xs leading-none text-muted-foreground">{userData?.correo}</p>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <a href="/marketplace">
-                      <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-secondary">
-                        <Home className="h-4 w-4 text-primary" /> <span className="text-sm font-medium">Inicio (Marketplace)</span>
-                      </DropdownMenuItem>
-                    </a>
-                    <a href="/profile">
-                      <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-secondary">
-                        <User className="h-4 w-4" /> <span className="text-sm font-medium">Perfil</span>
-                      </DropdownMenuItem>
-                    </a>
-                    <a href="/profile?tab=publications">
-                      <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-secondary">
-                        <Package className="h-4 w-4" /> <span className="text-sm font-medium">Mis Publicaciones</span>
-                      </DropdownMenuItem>
-                    </a>
-                    <a href="/profile?tab=rentals">
-                      <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-secondary border-b border-border/50">
-                        <History className="h-4 w-4" /> <span className="text-sm font-medium">Mis Alquileres</span>
-                      </DropdownMenuItem>
-                    </a>
+                    <DropdownMenuItem 
+                      onClick={() => window.location.href = "/marketplace"}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-secondary"
+                    >
+                      <Home className="h-4 w-4 text-primary" /> <span className="text-sm font-medium">Inicio (Marketplace)</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => window.location.href = "/profile"}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-secondary"
+                    >
+                      <User className="h-4 w-4" /> <span className="text-sm font-medium">Perfil</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => window.location.href = "/profile?tab=publications"}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-secondary"
+                    >
+                      <Package className="h-4 w-4" /> <span className="text-sm font-medium">Mis Publicaciones</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => window.location.href = "/profile?tab=rentals"}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-secondary border-b border-border/50"
+                    >
+                      <History className="h-4 w-4" /> <span className="text-sm font-medium">Mis Alquileres</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-destructive/10 text-destructive mt-1" onClick={handleLogout}>
                       <LogOut className="h-4 w-4" /> <span className="text-sm font-medium">Cerrar Sesión</span>
                     </DropdownMenuItem>
