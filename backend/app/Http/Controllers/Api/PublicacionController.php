@@ -19,7 +19,7 @@ class PublicacionController extends Controller
         $query = Publicacion::with(['imagenes', 'categoria', 'usuario', 'distrito'])
             ->where('estado', true)
             ->whereHas('usuario', function ($q) {
-                $q->where('deuda', '<=', 50);
+                $q->whereNull('deuda')->orWhere('deuda', '<=', 50);
             });
 
         // Filtrar por Búsqueda (LIKE)
