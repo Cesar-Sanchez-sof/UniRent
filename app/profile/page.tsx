@@ -8,7 +8,7 @@ import { ProductCard } from "@/components/product-card"
 import {
   User, Settings, Star, CreditCard, GraduationCap, Phone, Mail, Save, Loader2,
   BadgeCheck, AlertCircle, Camera, AtSign, Package, History, Plus, X, Check, Lock, Eye, EyeOff, Edit2, Trash2, Calendar, MapPin, Inbox, CheckCircle2, XCircle,
-  MessageCircle, Tag, DollarSign, FileText
+  MessageCircle, Tag, DollarSign, FileText, Home
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
