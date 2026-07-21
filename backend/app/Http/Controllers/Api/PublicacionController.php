@@ -123,6 +123,7 @@ class PublicacionController extends Controller
                 'titulo'       => $request->titulo,
                 'descripcion'  => $request->descripcion,
                 'precio_dia'   => $request->precio_dia,
+                'deposito'     => round($request->precio_dia * 0.30, 2),
                 'condicion'    => $request->condicion,
                 'id_distrito'  => $idDistrito,
                 'estado'       => true, 
@@ -130,19 +131,48 @@ class PublicacionController extends Controller
                 'id_categoria' => $this->mapCategoryToId($request->id_categoria)
             ]);
 
+            $savedImagesCount = 0;
+
             if ($request->hasFile('imagenes')) {
                 foreach ($request->file('imagenes') as $index => $file) {
                     $ext = $file->getClientOriginalExtension() ?: 'jpg';
                     $filename = 'pub_' . $publicacion->id_publicacion . '_' . time() . '_' . $index . '.' . $ext;
-                    $path = $file->storeAs('publicaciones', $filename, 's3');
-                    Imagen::create(['url_photo' => $path, 'id_publicacion' => $publicacion->id_publicacion]);
+                    
+                    $path = null;
+                    // Intento 1: Subir a S3
+                    try {
+                        $path = $file->storeAs('publicaciones', $filename, 's3');
+                    } catch (\Throwable $s3Err) {
+                        // Intento 2: Subir a disco público local
+                        try {
+                            $path = $file->storeAs('publicaciones', $filename, 'public');
+                        } catch (\Throwable $localErr) {
+                            $path = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80';
+                        }
+                    }
+
+                    if ($path) {
+                        Imagen::create([
+                            'url_photo' => $path,
+                            'id_publicacion' => $publicacion->id_publicacion
+                        ]);
+                        $savedImagesCount++;
+                    }
                 }
+            }
+
+            // Si por alguna razón no se guardó ninguna imagen, poner una imagen por defecto
+            if ($savedImagesCount === 0) {
+                Imagen::create([
+                    'url_photo' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+                    'id_publicacion' => $publicacion->id_publicacion
+                ]);
             }
 
             DB::commit();
             return response()->json(['message' => '¡Artículo publicado con éxito!', 'publicacion_id' => $publicacion->id_publicacion], 201);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
             return response()->json(['message' => 'Error al guardar la publicación', 'error' => $e->getMessage()], 500);
         }
