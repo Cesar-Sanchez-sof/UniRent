@@ -1,70 +1,112 @@
-# UniRent - Sistema de Alquiler P2P Universitario (Documentación Técnica)
+# 🎓 UniRent - Plataforma P2P de Alquiler Universitario
 
-Este documento detalla el funcionamiento y la lógica técnica implementada en el proyecto UniRent para el manejo de alquileres, notificaciones y el sistema de confianza (reseñas).
-
-## 🚀 Flujo del Ciclo de Alquiler
-
-El sistema sigue un flujo circular que garantiza la seguridad de ambas partes:
-
-1.  **Solicitud de Alquiler (Cliente):**
-    *   El cliente selecciona un rango de fechas.
-    *   **Validación de Traslape:** El sistema verifica que no existan alquileres en estado `Pendiente` o `Activo` en ese mismo rango. Si el dueño rechaza una solicitud (`Cancelado`), las fechas se liberan automáticamente.
-    *   Se calcula el monto total y el seguro (30% del subtotal de días, excluyendo la garantía).
-    *   Se envía una notificación al dueño.
-
-2.  **Gestión de Solicitud (Dueño):**
-    *   En la pestaña **"Solicitudes Recibidas"**, el dueño puede **Aceptar** (`Activo`) o **Rechazar** (`Cancelado`) el pedido.
-    *   Si se acepta, el cliente recibe una notificación de confirmación.
-
-3.  **Finalización del Servicio (Dueño):**
-    *   Una vez que el producto es devuelto, el dueño marca el alquiler como **"Finalizado"**. Esto habilita la fase de calificación para ambas partes.
-
-4.  **Sistema de Confianza Bidireccional:**
-    *   **Cliente a Dueño:** El cliente califica el producto y la atención en "Mis Alquileres". Esta nota actualiza el `puntaje_dueno` del usuario propietario.
-    *   **Dueño a Cliente:** El dueño califica el estado en que se devolvió el producto y la puntualidad en "Solicitudes Recibidas". Esta nota actualiza el `puntaje_arrendador` del cliente.
-    *   Ambos puntajes son el promedio (`AVG`) de todas las reseñas recibidas en cada rol.
+> **Alquila lo que necesitas, gana dinero con lo que no usas.**  
+> UniRent es una plataforma de economía colaborativa Peer-to-Peer (P2P) diseñada exclusivamente para conectar a la comunidad universitaria (UPAO), permitiendo el alquiler seguro de herramientas de estudio, calculadoras científicas/financieras, libros y equipos audiovisuales a precios accesibles.
 
 ---
 
-## 🛠️ Detalles Técnicos (Backend & Frontend)
+## 🌐 Enlaces de Despliegue en Producción
 
-### 📂 Estructura de la Tabla `reseña`
-Se utiliza la tabla original del SQL con una columna lógica `tipo`:
-*   `id_resena`: PK Autoincremental.
-*   `calificacion`: Numeric (1.0 a 5.0).
-*   `comentario`: Varchar (255).
-*   `id_alquiler`: FK vinculada a la tabla `alquiler`.
-*   `tipo`: Varchar (10) - Valores: `'cliente'` (califica al dueño) o `'dueno'` (califica al cliente).
+* 🚀 **Landing Page Comercial:** [https://unirent-upao.vercel.app/](https://unirent-upao.vercel.app/)
+* 🛒 **Marketplace PWA:** [https://unirent-upao.vercel.app/marketplace](https://unirent-upao.vercel.app/marketplace)
+* 📜 **Términos y Condiciones Legales:** [https://unirent-upao.vercel.app/terms](https://unirent-upao.vercel.app/terms)
+* ⚡ **Backend API REST (Render):** `https://nextus-api.onrender.com/api`
+* 📦 **Repositorio Oficial:** [https://github.com/Cesar-Sanchez-sof/UniRent.git](https://github.com/Cesar-Sanchez-sof/UniRent.git)
 
-### 🔗 Endpoints de Reseñas
-*   `POST /api/resenas`: Guarda una reseña y actualiza el puntaje del usuario calificado en tiempo real usando una transacción de DB.
-*   `GET /api/publicaciones/{id}/resenas`: Obtiene el historial de comentarios (solo tipo cliente) para mostrar en el detalle del producto.
+---
 
-### 📅 Lógica de Calendario y Disponibilidad
-La disponibilidad se calcula filtrando solo los alquileres bloqueantes:
-```php
-whereIn('estado', ['Pendiente', 'Activo'])
+## ✨ Características Principales & Reglas de Negocio
+
+### 1. 🔒 Validación KYC Institucional
+* Registro de usuarios restringido mediante **DNI (8 dígitos)**, **Código Universitario** y **Correo Institucional (`@upao.edu.pe`)**.
+* Verificación de identidad para garantizar un entorno cerrado, transparente y seguro entre pares.
+
+### 2. 📱 Experiencia PWA & Redirección Inteligente
+* **Landing Page Comercial (`/`):** Embudo de conversión con propuesta de valor bidireccional (*Ahorra* / *Gana dinero*), categorías y testimonios.
+* **Acceso PWA Directo (`/marketplace`):** Al instalar la App en el teléfono (modo *standalone*), la plataforma detecta el entorno y redirige automáticamente al catálogo principal del Marketplace.
+
+### 3. 🛡️ Límite de Tarifas y Artículos Prohibidos
+* **Límite Máximo de Tarifa:** El precio de alquiler por día no puede superar los **S/ 200 soles**.
+* **Artículos Prohibidos:** Queda estrictamente prohibida la publicación o alquiler de Laptops, Tablets o bienes de alto valor patrimonial para mitigar riesgos de robos de mayor impacto.
+
+### 4. ⚖️ Sistema de Gobernanza y 3 Infracciones (Strikes)
+* **Política de 3 Strikes:** Acumular tres (3) infracciones por retraso en devoluciones, calificaciones bajas (< 3.0) o maltrato verbal resulta en la **expulsión y suspensión permanente e inapelable** de la cuenta.
+* **Investigación Administrativa & Deuda:** Ante reportes de daños o pérdidas, la administración realiza una investigación de evidencias y genera una deuda formal al usuario agraviador para restituir el bien al dueño.
+
+### 5. ⭐ Sistema de Confianza Bidireccional
+* **Calificación Mutua:** Transacción calificada tanto por el cliente (hacia el dueño) como por el dueño (hacia el arrendatario), promediando los puntajes `puntaje_dueno` y `puntaje_arrendador` en tiempo real.
+
+---
+
+## 🛠️ Arquitectura y Stack Tecnológico
+
+```mermaid
+graph TD
+    A["Cliente Web / PWA (Vercel)<br/>Next.js 16 + React 19 + TailwindCSS"] -->|API REST HTTP/JSON| B["Backend API (Render)<br/>Laravel PHP 11"]
+    B -->|Consultas SQL / ORM| C["Base de Datos Relacional<br/>Supabase (PostgreSQL)"]
+    B -->|Upload Evidencias / Fotos| D["Almacenamiento Cloud<br/>AWS S3 Storage"]
 ```
-Esto permite que si un dueño tiene varias solicitudes "Pendientes" para el mismo día, solo la primera que sea **Aceptada** bloquee definitivamente el calendario. Si una es **Rechazada**, el día vuelve a estar disponible inmediatamente.
+
+* **Frontend:** Next.js 16 (App Router), React 19, TailwindCSS, Lucide React Icons (Desplegado en **Vercel**).
+* **Backend:** API REST en Laravel 11 PHP (Desplegado en **Render**).
+* **Base de Datos:** PostgreSQL administrado en **Supabase**.
+* **Almacenamiento Cloud:** **AWS S3 Storage** para imágenes de productos y fotos de perfil.
 
 ---
 
-## 👤 Manejo de Perfil
-El usuario puede gestionar todo desde su panel:
-*   **Configuración:** Cambio de datos personales, foto de perfil y contraseña.
-*   **Mis Publicaciones:** CRUD de artículos, edición de precios y descripción.
-*   **Mis Alquileres:** Seguimiento de pedidos realizados y botón para reseñar al dueño al finalizar.
-*   **Solicitudes Recibidas:** Panel de control para el dueño para aceptar/rechazar y finalizar servicios.
+## 📂 Estructura de Rutas del Proyecto (Next.js App Router)
+
+```
+app/
+├── page.tsx            # Landing Page Comercial comercial
+├── marketplace/
+│   └── page.tsx        # Catálogo principal PWA del Marketplace
+├── terms/
+│   └── page.tsx        # Términos, Condiciones Legales y Reglas de Gobernanza
+├── login/              # Formulario de inicio de sesión
+├── register/           # Registro KYC de 2 pasos con checkbox legal
+├── profile/            # Panel de control del usuario (Configuración, Publicaciones, Alquileres, Solicitudes)
+└── publish/            # Formulario de publicación con validación (máx. S/ 200)
+```
 
 ---
 
-## 🔔 Sistema de Notificaciones
-*   **Polling:** El Header consulta cada 10 segundos si hay nuevas notificaciones.
-*   **Tipos de Alerta:**
-    *   Nuevas solicitudes para el dueño.
-    *   Cambios de estado (Aceptado/Rechazado) para el cliente.
-    *   Recordatorios de reseñas pendientes al finalizar un servicio.
+## 🔧 Configuración para Desarrollo Local
+
+### 1. Clonar el Repositorio
+```bash
+git clone https://github.com/Cesar-Sanchez-sof/UniRent.git
+cd UniRent
+```
+
+### 2. Instalación de Dependencias del Frontend
+```bash
+npm install
+```
+
+### 3. Variables de Entorno (`.env.local`)
+Crea un archivo `.env.local` en la raíz del proyecto frontend:
+```env
+NEXT_PUBLIC_API_URL=https://nextus-api.onrender.com/api
+```
+
+### 4. Ejecutar el Servidor de Desarrollo
+```bash
+npm run dev
+```
+Abre en tu navegador: `http://localhost:3000`
 
 ---
-**Desarrollado para:** UniRent P2P Renting System
-**Fecha:** 10 de Marzo de 2026
+
+## 👥 Equipo de Trabajo (UPAO - Customer Development)
+
+* **Chávez Acevedo, Leonardo:** Coordinador del Equipo & Gestión del Proyecto
+* **Sánchez Chiroque, César Diego:** Desarrollo Frontend, Arquitectura Next.js/PWA, Landing Page & UI/UX
+* **Alegría Sagástegui, Juan:** Investigación de Mercado & Análisis Financiero (TAM / SAM / SOM)
+* **Ponce Vásquez, Mc Break:** Desarrollo Backend API en Laravel, Integración de Supabase & Endpoints REST
+* **Ponce Evangelista, Renzo:** Diseño de Prototipo UX/UI & Mapa de Experiencia de Usuario
+* **Lezama Vera, Emerson:** Marco Legal, Términos y Condiciones & Experimentos de Campo
+
+---
+
+© 2026 **UniRent** - Universidad Privada Antenor Orrego (UPAO). Todos los derechos reservados.
