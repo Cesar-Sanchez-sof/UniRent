@@ -21,15 +21,18 @@ class Imagen extends Model
     public function getUrlPhotoAttribute()
     {
         $value = $this->attributes['url_photo'] ?? null;
-        if (!$value) return null;
-        if (str_starts_with($value, 'http')) return $value;
+        if (!$value) return 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80';
+        if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+            return $value;
+        }
         
         $baseUrl = config('filesystems.disks.s3.url');
         if ($baseUrl) {
             return rtrim($baseUrl, '/') . '/' . ltrim($value, '/');
         }
 
-        return \Illuminate\Support\Facades\Storage::disk('s3')->url($value);
+        $supabaseBaseUrl = "https://khagadpjvxmzrouelwpu.storage.supabase.co/storage/v1/object/public/nex-us";
+        return rtrim($supabaseBaseUrl, '/') . '/' . ltrim($value, '/');
     }
 
     public function publicacion()

@@ -146,22 +146,24 @@ class PublicacionController extends Controller
                     $ext = $file->getClientOriginalExtension() ?: 'jpg';
                     $filename = 'pub_' . $publicacion->id_publicacion . '_' . time() . '_' . $index . '.' . $ext;
                     
-                    $path = null;
-                    // Intento 1: Subir a S3
+                    $fullUrl = null;
+                    // Intento 1: Subir a S3 / Supabase Storage
                     try {
                         $path = $file->storeAs('publicaciones', $filename, 's3');
+                        $fullUrl = "https://khagadpjvxmzrouelwpu.storage.supabase.co/storage/v1/object/public/nex-us/" . $path;
                     } catch (\Throwable $s3Err) {
                         // Intento 2: Subir a disco público local
                         try {
                             $path = $file->storeAs('publicaciones', $filename, 'public');
+                            $fullUrl = url('/storage/' . $path);
                         } catch (\Throwable $localErr) {
-                            $path = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80';
+                            $fullUrl = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80';
                         }
                     }
 
-                    if ($path) {
+                    if ($fullUrl) {
                         Imagen::create([
-                            'url_photo' => $path,
+                            'url_photo' => $fullUrl,
                             'id_publicacion' => $publicacion->id_publicacion
                         ]);
                         $savedImagesCount++;
