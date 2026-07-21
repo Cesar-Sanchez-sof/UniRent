@@ -161,13 +161,27 @@ class PublicacionController extends Controller
                     $filename = 'pub_' . $publicacion->id_publicacion . '_' . time() . '_' . $index . '.' . $ext;
                     
                     $fullUrl = null;
+
+                    // 1. Intentar subir al bucket S3 / Supabase Storage si está configurado
                     try {
-                        $path = $file->storeAs('publicaciones', $filename, 'public');
-                        $fullUrl = url('/storage/' . $path);
-                    } catch (\Throwable $localErr) {
-                        $fullUrl = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80';
+                        if (config('filesystems.disks.s3.key') && config('filesystems.disks.s3.bucket')) {
+                            $path = $file->storeAs('publicaciones', $filename, 's3');
+                            $s3BaseUrl = config('filesystems.disks.s3.url') ?: "https://khagadpjvxmzrouelwpu.storage.supabase.co/storage/v1/object/public/nex-us";
+                            $fullUrl = rtrim($s3BaseUrl, '/') . '/' . ltrim($path, '/');
+                        }
+                    } catch (\Throwable $s3Err) {}
+
+                    // 2. Si S3 no está activo o falla, guardar en el disco público de Laravel
+                    if (!$fullUrl) {
+                        try {
+                            $path = $file->storeAs('publicaciones', $filename, 'public');
+                            $fullUrl = url('/storage/' . $path);
+                        } catch (\Throwable $localErr) {
+                            $fullUrl = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80';
+                        }
                     }
 
+                    // 3. Registrar la URL pública en la tabla 'imagenes' de Supabase PostgreSQL
                     try {
                         Imagen::create([
                             'url_photo' => $fullUrl,

@@ -17,24 +17,73 @@ interface MultiImageUploadProps {
   maxImages?: number
 }
 
+async function compressImage(file: File, maxWidth = 1920, maxHeight = 1920, quality = 0.85): Promise<File> {
+  if (!file.type.startsWith("image/") || file.size < 800 * 1024) return file;
+
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(img.src);
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+            type: "image/jpeg",
+            lastModified: Date.now(),
+          });
+          resolve(compressedFile);
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+    img.onerror = () => resolve(file);
+  });
+}
+
 export function MultiImageUpload({ images, onChange, maxImages = 8 }: MultiImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [dragOver, setDragOver] = useState(false)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const dragItem = useRef<number | null>(null)
 
-  const addImages = useCallback((files: FileList | File[]) => {
-    const newImages: ImageFile[] = []
+  const addImages = useCallback(async (files: FileList | File[]) => {
     const remaining = maxImages - images.length
+    const fileArray = Array.from(files).slice(0, remaining)
+    const newImages: ImageFile[] = []
 
-    Array.from(files).slice(0, remaining).forEach((file) => {
-      if (!file.type.startsWith("image/")) return
+    for (const file of fileArray) {
+      if (!file.type.startsWith("image/")) continue
+      const compressedFile = await compressImage(file)
       newImages.push({
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-        file,
-        preview: URL.createObjectURL(file),
+        file: compressedFile,
+        preview: URL.createObjectURL(compressedFile),
       })
-    })
+    }
 
     if (newImages.length > 0) {
       onChange([...images, ...newImages])
