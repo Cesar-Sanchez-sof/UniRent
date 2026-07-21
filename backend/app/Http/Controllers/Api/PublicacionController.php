@@ -206,7 +206,10 @@ class PublicacionController extends Controller
             return response()->json(['message' => '¡Artículo publicado con éxito!', 'publicacion_id' => $publicacion->id_publicacion], 201);
 
         } catch (\Throwable $e) {
-            DB::rollBack();
+            try {
+                DB::rollBack();
+            } catch (\Throwable $rbErr) {}
+
             return response()->json([
                 'message' => 'Error al guardar la publicación',
                 'error' => $e->getMessage()

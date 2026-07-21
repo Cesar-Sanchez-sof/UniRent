@@ -231,7 +231,15 @@ export function PublishForm() {
         return
       }
 
-      const data = await response.json()
+      let data: any = {}
+      const contentType = response.headers.get("content-type")
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json()
+      } else {
+        const text = await response.text()
+        console.error("Respuesta no-JSON del servidor:", text)
+        data = { message: "Las fotos seleccionadas exceden la capacidad de envío del servidor. Intenta seleccionar fotos de menor resolución." }
+      }
 
       if (response.ok) {
         setIsPublished(true)
