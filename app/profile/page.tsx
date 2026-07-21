@@ -442,6 +442,9 @@ function ProfileContent() {
             </div>
 
             <nav className="bg-card rounded-2xl border border-border p-2 shadow-sm space-y-1 bg-white">
+              <a href="/marketplace" className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors mb-2 shadow-sm">
+                <Home className="h-4 w-4 text-emerald-400" /> Ir a Inicio (Marketplace)
+              </a>
               <Button variant="ghost" onClick={() => setActiveTab('config')} className={cn("w-full justify-start gap-3 rounded-xl relative", activeTab === 'config' ? "bg-primary/10 text-primary font-bold" : "text-muted-foreground")}>
                 <Settings className="h-4 w-4" /> 
                 Configuración

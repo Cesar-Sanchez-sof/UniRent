@@ -121,8 +121,8 @@ export function UniRentHeader() {
           </div>
 
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost" className="text-sm font-medium rounded-full px-4" asChild>
-              <a href="/">Ver Landing</a>
+            <Button variant="ghost" className="text-sm font-medium rounded-full px-4 gap-2 text-foreground" asChild>
+              <a href="/marketplace"><Home className="h-4 w-4 text-primary" /> Inicio</a>
             </Button>
 
             <Button variant="ghost" className="text-sm font-medium rounded-full px-4" asChild>
@@ -210,6 +210,11 @@ export function UniRentHeader() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <a href="/marketplace">
+                      <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-secondary">
+                        <Home className="h-4 w-4 text-primary" /> <span className="text-sm font-medium">Inicio (Marketplace)</span>
+                      </DropdownMenuItem>
+                    </a>
                     <a href="/profile">
                       <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-secondary">
                         <User className="h-4 w-4" /> <span className="text-sm font-medium">Perfil</span>

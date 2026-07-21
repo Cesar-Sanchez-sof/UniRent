@@ -64,6 +64,7 @@ export function UniRentFooter() {
             </span>
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <a href="/" className="hover:text-foreground font-semibold text-primary transition-colors">Ver Landing Page</a>
             <a href="/terms" className="hover:text-foreground transition-colors">Privacidad</a>
             <a href="/terms" className="hover:text-foreground transition-colors">Términos</a>
             <a href="https://wa.me/+51907905925" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Contacto</a>
