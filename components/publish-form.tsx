@@ -237,7 +237,9 @@ export function PublishForm() {
         setIsPublished(true)
       } else {
         let msg = data.message || "No se pudo publicar el artículo."
-        if (data.errors) {
+        if (data.error) {
+          msg += `: ${data.error}`
+        } else if (data.errors) {
           const errorList = Object.values(data.errors).flat() as string[]
           msg = errorList.join(" ")
         }

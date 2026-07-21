@@ -110,10 +110,18 @@ class PublicacionController extends Controller
             return response()->json(['message' => 'Por favor adjunta al menos 1 fotografía del artículo.'], 422);
         }
 
-        // Validación y fallback seguro para el distrito
+        // Categoría válida: verifica que exista en la tabla 'categoria', de lo contrario usa la primera disponible
+        $catId = (int) $this->mapCategoryToId($request->id_categoria);
+        if (!DB::table('categoria')->where('id_categoria', $catId)->exists()) {
+            $firstCat = DB::table('categoria')->value('id_categoria');
+            $catId = $firstCat ?: 1;
+        }
+
+        // Distrito válido: verifica que exista en la tabla 'distrito', de lo contrario usa el primero o null
         $idDistrito = $request->id_distrito;
         if (!$idDistrito || !DB::table('distrito')->where('id_distrito', $idDistrito)->exists()) {
-            $idDistrito = '130101'; // Fallback predeterminado a Trujillo (Cercado)
+            $firstDist = DB::table('distrito')->value('id_distrito');
+            $idDistrito = $firstDist ?: null;
         }
 
         try {
@@ -128,7 +136,7 @@ class PublicacionController extends Controller
                 'id_distrito'  => $idDistrito,
                 'estado'       => true, 
                 'id_usuario'   => $user->id_usuario,
-                'id_categoria' => $this->mapCategoryToId($request->id_categoria)
+                'id_categoria' => $catId
             ]);
 
             $savedImagesCount = 0;
