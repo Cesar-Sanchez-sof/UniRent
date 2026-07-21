@@ -91,52 +91,60 @@ class PublicacionController extends Controller
         $user = $request->user();
 
         if ($user->deuda > 50) {
-            return response()->json(['message' => 'Deuda pendiente mayor a S/ 50.00'], 403);
+            return response()->json(['message' => 'Tienes una deuda pendiente mayor a S/ 50.00. No puedes publicar hasta regularizarla.'], 403);
         }
 
         $validator = Validator::make($request->all(), [
-            'titulo' => 'required|string|max:80',
-            'descripcion' => 'required|string|max:500',
-            'precio_dia' => 'required|numeric|min:1',
-            'condicion' => 'required|string|max:50',
-            'id_distrito' => 'required|exists:distrito,id_distrito',
-            'id_categoria' => 'required|string',
-            'imagenes' => 'required|array|min:1|max:8',
-            'imagenes.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
+            'titulo'       => 'required|string|max:100',
+            'descripcion'  => 'required|string|max:1000',
+            'precio_dia'   => 'required|numeric|min:1',
+            'condicion'    => 'required|string|max:50',
+            'id_categoria' => 'required',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        if (!$request->hasFile('imagenes')) {
+            return response()->json(['message' => 'Por favor adjunta al menos 1 fotografía del artículo.'], 422);
+        }
+
+        // Validación y fallback seguro para el distrito
+        $idDistrito = $request->id_distrito;
+        if (!$idDistrito || !DB::table('distrito')->where('id_distrito', $idDistrito)->exists()) {
+            $idDistrito = '130101'; // Fallback predeterminado a Trujillo (Cercado)
+        }
+
         try {
             DB::beginTransaction();
 
             $publicacion = Publicacion::create([
-                'titulo' => $request->titulo,
-                'descripcion' => $request->descripcion,
-                'precio_dia' => $request->precio_dia,
-                'condicion' => $request->condicion,
-                'id_distrito' => $request->id_distrito,
-                'estado' => true, 
-                'id_usuario' => $user->id_usuario,
+                'titulo'       => $request->titulo,
+                'descripcion'  => $request->descripcion,
+                'precio_dia'   => $request->precio_dia,
+                'condicion'    => $request->condicion,
+                'id_distrito'  => $idDistrito,
+                'estado'       => true, 
+                'id_usuario'   => $user->id_usuario,
                 'id_categoria' => $this->mapCategoryToId($request->id_categoria)
             ]);
 
             if ($request->hasFile('imagenes')) {
                 foreach ($request->file('imagenes') as $index => $file) {
-                    $filename = 'pub_' . $publicacion->id_publicacion . '_' . time() . '_' . $index . '.' . $file->getClientOriginalExtension();
+                    $ext = $file->getClientOriginalExtension() ?: 'jpg';
+                    $filename = 'pub_' . $publicacion->id_publicacion . '_' . time() . '_' . $index . '.' . $ext;
                     $path = $file->storeAs('publicaciones', $filename, 's3');
                     Imagen::create(['url_photo' => $path, 'id_publicacion' => $publicacion->id_publicacion]);
                 }
             }
 
             DB::commit();
-            return response()->json(['message' => '¡Artículo publicado!', 'publicacion_id' => $publicacion->id_publicacion], 201);
+            return response()->json(['message' => '¡Artículo publicado con éxito!', 'publicacion_id' => $publicacion->id_publicacion], 201);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Error al guardar', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Error al guardar la publicación', 'error' => $e->getMessage()], 500);
         }
     }
 
