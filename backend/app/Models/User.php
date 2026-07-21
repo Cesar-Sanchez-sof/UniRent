@@ -46,9 +46,17 @@ class User extends Authenticatable
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
             get: function ($value) {
                 if (!$value) return null;
-                if (filter_var($value, FILTER_VALIDATE_URL)) return $value;
+                if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+                    return $value;
+                }
                 
-                return \Illuminate\Support\Facades\Storage::disk('s3')->url($value);
+                $baseUrl = config('filesystems.disks.s3.url');
+                if ($baseUrl) {
+                    return rtrim($baseUrl, '/') . '/' . ltrim($value, '/');
+                }
+
+                $supabaseBaseUrl = "https://khagadpjvxmzrouelwpu.storage.supabase.co/storage/v1/object/public/nex-us";
+                return rtrim($supabaseBaseUrl, '/') . '/' . ltrim($value, '/');
             },
         );
     }
