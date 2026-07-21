@@ -119,24 +119,24 @@ class PublicacionController extends Controller
                 return response()->json(['message' => 'Por favor adjunta al menos 1 fotografía del artículo.'], 422);
             }
 
-            // 1. Validar Categoría (Asegura existencia en BD)
+            // 1. Validar e Insertar Categoría si no existe
             $catId = (int) $this->mapCategoryToId($request->id_categoria);
             if (!DB::table('categoria')->where('id_categoria', $catId)->exists()) {
-                $catId = DB::table('categoria')->value('id_categoria');
-                if (!$catId) {
-                    DB::table('categoria')->insert([
-                        ['nombre' => 'Tecnología'],
-                        ['nombre' => 'Libros'],
-                        ['nombre' => 'Fotografía']
-                    ]);
+                try {
+                    DB::table('categoria')->insert(['nombre' => $request->id_categoria === '3' ? 'Fotografía' : ($request->id_categoria === '2' ? 'Libros' : 'Tecnología')]);
+                    $catId = DB::table('categoria')->orderBy('id_categoria', 'desc')->value('id_categoria') ?: 1;
+                } catch (\Throwable $e) {
                     $catId = DB::table('categoria')->value('id_categoria') ?: 1;
                 }
             }
 
-            // 2. Validar Distrito (Usa NULL si no existe para evitar violación de FK)
+            // 2. Validar Distrito: Si el string '130103' u otro no existe en la tabla 'distrito', usar NULL para prevenir error de FK en Postgres
             $idDistrito = $request->id_distrito;
-            if ($idDistrito && !DB::table('distrito')->where('id_distrito', $idDistrito)->exists()) {
-                $idDistrito = DB::table('distrito')->value('id_distrito') ?: null;
+            if ($idDistrito) {
+                $distExists = DB::table('distrito')->where('id_distrito', (string)$idDistrito)->exists();
+                if (!$distExists) {
+                    $idDistrito = null;
+                }
             }
 
             DB::beginTransaction();
