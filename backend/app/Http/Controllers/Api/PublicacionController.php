@@ -33,9 +33,17 @@ class PublicacionController extends Controller
             $query->where('id_categoria', $request->id_categoria);
         }
 
-        // Si el usuario está autenticado, excluimos sus propias publicaciones para mostrar únicamente las de otros usuarios
+        // Excluir publicaciones del usuario autenticado (se resuelve el token Sanctum manualmente si la ruta es pública)
         try {
-            $user = auth('sanctum')->user() ?: $request->user();
+            $user = $request->user();
+            if (!$user && $request->hasHeader('Authorization')) {
+                $tokenStr = str_replace('Bearer ', '', $request->header('Authorization'));
+                $pat = \Laravel\Sanctum\PersonalAccessToken::findToken($tokenStr);
+                if ($pat) {
+                    $user = $pat->tokenable;
+                }
+            }
+
             if ($user) {
                 $userId = $user->id_usuario ?? $user->id;
                 if ($userId) {

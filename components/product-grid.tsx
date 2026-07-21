@@ -42,7 +42,20 @@ export function ProductGrid({ onProductClick, selectedCategoryId, searchTerm }: 
         })
         
         if (response.ok) {
-          const data = await response.json()
+          let data = await response.json()
+          
+          // Filtrado estricto en el cliente: Excluir publicaciones del usuario autenticado
+          try {
+            const storedUserStr = localStorage.getItem('user')
+            if (storedUserStr) {
+              const storedUser = JSON.parse(storedUserStr)
+              const currentUserId = Number(storedUser.id_usuario ?? storedUser.id)
+              if (currentUserId) {
+                data = data.filter((p: any) => Number(p.id_usuario) !== currentUserId && Number(p.usuario?.id_usuario) !== currentUserId)
+              }
+            }
+          } catch (err) {}
+
           setProducts(data)
         }
       } catch (e) {
