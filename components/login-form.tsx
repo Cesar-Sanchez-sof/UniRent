@@ -72,7 +72,7 @@ export function LoginForm() {
       toast({
         variant: "destructive",
         title: "Error de conexión",
-        description: "No se pudo conectar con el servidor backend (127.0.0.1:8000).",
+        description: "No se pudo conectar con el servidor de UniRent. Por favor intenta nuevamente.",
       })
     } finally {
       setIsLoading(false)

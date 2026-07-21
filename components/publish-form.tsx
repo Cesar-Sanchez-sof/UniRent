@@ -202,10 +202,15 @@ export function PublishForm() {
       if (response.ok) {
         setIsPublished(true)
       } else {
-        toast({ variant: "destructive", title: "Error al publicar", description: data.message })
+        let msg = data.message || "No se pudo publicar el artículo."
+        if (data.errors) {
+          const errorList = Object.values(data.errors).flat() as string[]
+          msg = errorList.join(" ")
+        }
+        toast({ variant: "destructive", title: "Error al publicar", description: msg })
       }
     } catch (error) {
-      toast({ variant: "destructive", title: "Error de conexión" })
+      toast({ variant: "destructive", title: "Error de conexión", description: "No se pudo conectar con el servidor." })
     } finally {
       setIsLoading(false)
     }

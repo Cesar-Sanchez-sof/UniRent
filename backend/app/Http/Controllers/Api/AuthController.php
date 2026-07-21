@@ -93,10 +93,22 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user' => [
-                'id' => $user->id_usuario,
-                'nombre' => $user->primer_nombre . ' ' . $user->primer_apellido,
-                'username' => $user->username,
-                'foto_perfil' => $user->foto_perfil,
+                'id_usuario'       => $user->id_usuario,
+                'id'               => $user->id_usuario,
+                'primer_nombre'    => $user->primer_nombre,
+                'segundo_nombre'   => $user->segundo_nombre,
+                'primer_apellido'  => $user->primer_apellido,
+                'segundo_apellido' => $user->segundo_apellido,
+                'nombre'           => $user->primer_nombre . ' ' . $user->primer_apellido,
+                'username'         => $user->username,
+                'correo'           => $user->correo,
+                'telefono'         => $user->telefono,
+                'dni'              => $user->dni,
+                'id_universidad'   => $user->id_universidad,
+                'foto_perfil'      => $user->foto_perfil,
+                'deuda'            => $user->deuda,
+                'puntaje_dueno'    => $user->puntaje_dueno,
+                'puntaje_arrendador' => $user->puntaje_arrendador,
             ]
         ]);
     }
