@@ -25,12 +25,17 @@ class PublicacionController extends Controller
         // Filtrar por Búsqueda (LIKE)
         if ($request->has('search') && !empty($request->search)) {
             $searchTerm = '%' . $request->search . '%';
-            $query->where('titulo', 'ILIKE', $searchTerm); // ILIKE para búsqueda insensible a mayúsculas en Postgres
+            $query->where('titulo', 'ILIKE', $searchTerm);
         }
 
         // Filtrar por Categoría
         if ($request->has('id_categoria')) {
             $query->where('id_categoria', $request->id_categoria);
+        }
+
+        // Si el usuario está logueado, excluimos sus propias publicaciones para que no se alquile a sí mismo
+        if ($user = auth('sanctum')->user()) {
+            $query->where('id_usuario', '!=', $user->id_usuario);
         }
 
         $publicaciones = $query->latest('id_publicacion')->get();
@@ -83,43 +88,57 @@ class PublicacionController extends Controller
      */
     public function store(Request $request)
     {
-        $user = $request->user();
-
-        if ($user->deuda > 50) {
-            return response()->json(['message' => 'Tienes una deuda pendiente mayor a S/ 50.00. No puedes publicar hasta regularizarla.'], 403);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'titulo'       => 'required|string|max:100',
-            'descripcion'  => 'required|string|max:1000',
-            'precio_dia'   => 'required|numeric|min:1',
-            'condicion'    => 'required|string|max:50',
-            'id_categoria' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        if (!$request->hasFile('imagenes')) {
-            return response()->json(['message' => 'Por favor adjunta al menos 1 fotografía del artículo.'], 422);
-        }
-
-        // Categoría válida: verifica que exista en la tabla 'categoria', de lo contrario usa la primera disponible
-        $catId = (int) $this->mapCategoryToId($request->id_categoria);
-        if (!DB::table('categoria')->where('id_categoria', $catId)->exists()) {
-            $firstCat = DB::table('categoria')->value('id_categoria');
-            $catId = $firstCat ?: 1;
-        }
-
-        // Distrito válido: verifica que exista en la tabla 'distrito', de lo contrario usa el primero o null
-        $idDistrito = $request->id_distrito;
-        if (!$idDistrito || !DB::table('distrito')->where('id_distrito', $idDistrito)->exists()) {
-            $firstDist = DB::table('distrito')->value('id_distrito');
-            $idDistrito = $firstDist ?: null;
-        }
-
         try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json(['message' => 'Usuario no autenticado.'], 401);
+            }
+
+            $userId = $user->id_usuario ?? $user->id;
+            if (!$userId) {
+                return response()->json(['message' => 'ID de usuario no válido.'], 401);
+            }
+
+            if (($user->deuda ?? 0) > 50) {
+                return response()->json(['message' => 'Tienes una deuda pendiente mayor a S/ 50.00. No puedes publicar hasta regularizarla.'], 403);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'titulo'       => 'required|string|max:100',
+                'descripcion'  => 'required|string|max:1000',
+                'precio_dia'   => 'required|numeric|min:1',
+                'condicion'    => 'required|string|max:50',
+                'id_categoria' => 'required',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
+            if (!$request->hasFile('imagenes')) {
+                return response()->json(['message' => 'Por favor adjunta al menos 1 fotografía del artículo.'], 422);
+            }
+
+            // 1. Validar Categoría (Asegura existencia en BD)
+            $catId = (int) $this->mapCategoryToId($request->id_categoria);
+            if (!DB::table('categoria')->where('id_categoria', $catId)->exists()) {
+                $catId = DB::table('categoria')->value('id_categoria');
+                if (!$catId) {
+                    DB::table('categoria')->insert([
+                        ['nombre' => 'Tecnología'],
+                        ['nombre' => 'Libros'],
+                        ['nombre' => 'Fotografía']
+                    ]);
+                    $catId = DB::table('categoria')->value('id_categoria') ?: 1;
+                }
+            }
+
+            // 2. Validar Distrito (Usa NULL si no existe para evitar violación de FK)
+            $idDistrito = $request->id_distrito;
+            if ($idDistrito && !DB::table('distrito')->where('id_distrito', $idDistrito)->exists()) {
+                $idDistrito = DB::table('distrito')->value('id_distrito') ?: null;
+            }
+
             DB::beginTransaction();
 
             $publicacion = Publicacion::create([
@@ -130,7 +149,7 @@ class PublicacionController extends Controller
                 'condicion'    => $request->condicion,
                 'id_distrito'  => $idDistrito,
                 'estado'       => true, 
-                'id_usuario'   => $user->id_usuario,
+                'id_usuario'   => $userId,
                 'id_categoria' => $catId
             ]);
 
@@ -142,36 +161,30 @@ class PublicacionController extends Controller
                     $filename = 'pub_' . $publicacion->id_publicacion . '_' . time() . '_' . $index . '.' . $ext;
                     
                     $fullUrl = null;
-                    // Intento 1: Subir a S3 / Supabase Storage
                     try {
-                        $path = $file->storeAs('publicaciones', $filename, 's3');
-                        $fullUrl = "https://khagadpjvxmzrouelwpu.storage.supabase.co/storage/v1/object/public/nex-us/" . $path;
-                    } catch (\Throwable $s3Err) {
-                        // Intento 2: Subir a disco público local
-                        try {
-                            $path = $file->storeAs('publicaciones', $filename, 'public');
-                            $fullUrl = url('/storage/' . $path);
-                        } catch (\Throwable $localErr) {
-                            $fullUrl = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80';
-                        }
+                        $path = $file->storeAs('publicaciones', $filename, 'public');
+                        $fullUrl = url('/storage/' . $path);
+                    } catch (\Throwable $localErr) {
+                        $fullUrl = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80';
                     }
 
-                    if ($fullUrl) {
+                    try {
                         Imagen::create([
                             'url_photo' => $fullUrl,
                             'id_publicacion' => $publicacion->id_publicacion
                         ]);
                         $savedImagesCount++;
-                    }
+                    } catch (\Throwable $imgErr) {}
                 }
             }
 
-            // Si por alguna razón no se guardó ninguna imagen, poner una imagen por defecto
             if ($savedImagesCount === 0) {
-                Imagen::create([
-                    'url_photo' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
-                    'id_publicacion' => $publicacion->id_publicacion
-                ]);
+                try {
+                    Imagen::create([
+                        'url_photo' => 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+                        'id_publicacion' => $publicacion->id_publicacion
+                    ]);
+                } catch (\Throwable $imgErr) {}
             }
 
             DB::commit();
@@ -179,7 +192,10 @@ class PublicacionController extends Controller
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Error al guardar la publicación', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Error al guardar la publicación',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
