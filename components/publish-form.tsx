@@ -81,14 +81,50 @@ export function PublishForm() {
   const [pricePerDay, setPricePerDay] = useState("")
   const [insuranceAmount, setInsuranceAmount] = useState<number>(0)
   
-  // Ubicación Real desde API
-  const [departamentos, setDepartamentos] = useState<any[]>([])
-  const [provincias, setProvincias] = useState<any[]>([])
-  const [distritos, setDistritos] = useState<any[]>([])
+  // Ubicación con Fallbacks por defecto para asegurar que siempre haya opciones
+  const defaultDepts = [
+    { id_departamento: "13", nombre: "La Libertad" },
+    { id_departamento: "15", nombre: "Lima" },
+    { id_departamento: "14", nombre: "Lambayeque" }
+  ];
 
-  const [idDepartamento, setIdDepartamento] = useState("")
-  const [idProvincia, setIdProvincia] = useState("")
-  const [idDistrito, setIdDistrito] = useState("")
+  const defaultProvsMap: Record<string, any[]> = {
+    "13": [
+      { id_provincia: "1301", nombre: "Trujillo" },
+      { id_provincia: "1302", nombre: "Ascope" },
+      { id_provincia: "1303", nombre: "Chepén" },
+      { id_provincia: "1304", nombre: "Pacasmayo" },
+      { id_provincia: "1305", nombre: "Virú" }
+    ],
+    "15": [
+      { id_provincia: "1501", nombre: "Lima" },
+      { id_provincia: "1502", nombre: "Callao" }
+    ],
+    "14": [
+      { id_provincia: "1401", nombre: "Chiclayo" }
+    ]
+  };
+
+  const defaultDistsMap: Record<string, any[]> = {
+    "1301": [
+      { id_distrito: "130101", nombre: "Trujillo (Cercado)" },
+      { id_distrito: "130102", nombre: "El Porvenir" },
+      { id_distrito: "130105", nombre: "La Esperanza" },
+      { id_distrito: "130106", nombre: "Laredo" },
+      { id_distrito: "130107", nombre: "Moche" },
+      { id_distrito: "130108", nombre: "Salaverry" },
+      { id_distrito: "130109", nombre: "Simbal" },
+      { id_distrito: "130110", nombre: "Victor Larco Herrera" }
+    ]
+  };
+
+  const [departamentos, setDepartamentos] = useState<any[]>(defaultDepts)
+  const [provincias, setProvincias] = useState<any[]>(defaultProvsMap["13"])
+  const [distritos, setDistritos] = useState<any[]>(defaultDistsMap["1301"])
+
+  const [idDepartamento, setIdDepartamento] = useState("13")
+  const [idProvincia, setIdProvincia] = useState("1301")
+  const [idDistrito, setIdDistrito] = useState("130110")
   
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
@@ -114,7 +150,9 @@ export function PublishForm() {
         const res = await fetch(`${API_URL}/ubicaciones/departamentos`);
         if (res.ok) {
           const data = await res.json();
-          setDepartamentos(data);
+          if (Array.isArray(data) && data.length > 0) {
+            setDepartamentos(data);
+          }
         }
       } catch (e) {
         console.error("Error cargando departamentos:", e);
@@ -131,13 +169,18 @@ export function PublishForm() {
         const res = await fetch(`${API_URL}/ubicaciones/provincias/${idDepartamento}`);
         if (res.ok) {
           const data = await res.json();
-          setProvincias(data);
-          setIdProvincia("");
-          setIdDistrito("");
-          setDistritos([]);
+          if (Array.isArray(data) && data.length > 0) {
+            setProvincias(data);
+          } else if (defaultProvsMap[idDepartamento]) {
+            setProvincias(defaultProvsMap[idDepartamento]);
+          }
+        } else if (defaultProvsMap[idDepartamento]) {
+          setProvincias(defaultProvsMap[idDepartamento]);
         }
       } catch (e) {
-        console.error("Error cargando provincias:", e);
+        if (defaultProvsMap[idDepartamento]) {
+          setProvincias(defaultProvsMap[idDepartamento]);
+        }
       }
     };
     loadProvs();
@@ -151,11 +194,18 @@ export function PublishForm() {
         const res = await fetch(`${API_URL}/ubicaciones/distritos/${idProvincia}`);
         if (res.ok) {
           const data = await res.json();
-          setDistritos(data);
-          setIdDistrito("");
+          if (Array.isArray(data) && data.length > 0) {
+            setDistritos(data);
+          } else if (defaultDistsMap[idProvincia]) {
+            setDistritos(defaultDistsMap[idProvincia]);
+          }
+        } else if (defaultDistsMap[idProvincia]) {
+          setDistritos(defaultDistsMap[idProvincia]);
         }
       } catch (e) {
-        console.error("Error cargando distritos:", e);
+        if (defaultDistsMap[idProvincia]) {
+          setDistritos(defaultDistsMap[idProvincia]);
+        }
       }
     };
     loadDists();
