@@ -35,6 +35,7 @@ export function ProductGrid({ onProductClick, selectedCategoryId, searchTerm }: 
         if (debouncedSearch) url += `search=${encodeURIComponent(debouncedSearch)}`
 
         const response = await fetch(url, {
+          cache: "no-store",
           headers: { 
             "Accept": "application/json",
             ...(token ? { "Authorization": `Bearer ${token}` } : {})
