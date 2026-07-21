@@ -238,7 +238,7 @@ class PublicacionController extends Controller
             'id_categoria' => 'sometimes|required|string',
             'estado' => 'sometimes|string', 
             'imagenes' => 'sometimes|array|max:8',
-            'imagenes.*' => 'image|mimes:jpeg,png,jpg,webp|max:10240',
+            'imagenes.*' => 'nullable|file|max:51200',
             'delete_images' => 'sometimes|array', // IDs de imágenes a eliminar
             'delete_images.*' => 'exists:imagen,id_imagen',
         ]);

@@ -349,7 +349,7 @@ function ProfileContent() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      if (file.size > 5 * 1024 * 1024) return toast({ variant: "destructive", title: "Máx 5MB" })
+      if (file.size > 50 * 1024 * 1024) return toast({ variant: "destructive", title: "Máx 50MB", description: "La imagen excede el peso máximo permitido de 50MB." })
       setTempFile(file); setPreviewUrl(URL.createObjectURL(file)); setShowPhotoModal(true)
     }
   }

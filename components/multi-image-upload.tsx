@@ -156,7 +156,7 @@ export function MultiImageUpload({ images, onChange, maxImages = 8 }: MultiImage
               Arrastra tus fotos o haz clic para seleccionar
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              JPG, PNG o WebP. {"M\u00e1x."} {maxImages} {"im\u00e1genes"}
+              JPG, PNG o WebP (hasta 50MB por foto). {"M\u00e1x."} {maxImages} {"im\u00e1genes"}
             </p>
           </div>
         </button>
