@@ -125,8 +125,8 @@ class PublicacionController extends Controller
             }
 
             $validator = Validator::make($request->all(), [
-                'titulo'       => 'required|string|max:100',
-                'descripcion'  => 'required|string|max:1000',
+                'titulo'       => 'required|string|max:200',
+                'descripcion'  => 'required|string|max:2000',
                 'precio_dia'   => 'required|numeric|min:1',
                 'condicion'    => 'required|string|max:50',
                 'id_categoria' => 'required',
@@ -162,12 +162,16 @@ class PublicacionController extends Controller
 
             DB::beginTransaction();
 
+            // Asegurar que titulo no exceda el limite VARCHAR(50) de Supabase PostgreSQL
+            $safeTitulo = mb_substr($request->titulo, 0, 50);
+            $safeCondicion = mb_substr($request->condicion, 0, 50);
+
             $publicacion = Publicacion::create([
-                'titulo'       => $request->titulo,
+                'titulo'       => $safeTitulo,
                 'descripcion'  => $request->descripcion,
                 'precio_dia'   => $request->precio_dia,
                 'deposito'     => round($request->precio_dia * 0.30, 2),
-                'condicion'    => $request->condicion,
+                'condicion'    => $safeCondicion,
                 'id_distrito'  => $idDistrito,
                 'estado'       => true, 
                 'id_usuario'   => $userId,
@@ -275,6 +279,13 @@ class PublicacionController extends Controller
 
             // Actualizar campos básicos
             $updateData = $request->only(['titulo', 'descripcion', 'precio_dia', 'condicion', 'id_distrito']);
+            
+            if (isset($updateData['titulo'])) {
+                $updateData['titulo'] = mb_substr($updateData['titulo'], 0, 50);
+            }
+            if (isset($updateData['condicion'])) {
+                $updateData['condicion'] = mb_substr($updateData['condicion'], 0, 50);
+            }
             
             if ($request->has('id_categoria')) {
                 $updateData['id_categoria'] = $this->mapCategoryToId($request->id_categoria);
