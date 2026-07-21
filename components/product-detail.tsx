@@ -325,16 +325,35 @@ export function ProductDetail({ productId, onClose }: ProductDetailProps) {
                 </div>
 
                 <div className="space-y-3">
-                  <Button 
-                    onClick={handleRentalRequest}
-                    disabled={isLoggedIn && (!dateRange?.from || isRangeInvalid || isSubmitting)}
-                    className={cn(
-                      "w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl transition-all active:scale-95",
-                      !isLoggedIn ? "bg-[#1e5d8c] hover:bg-[#164a6d]" : "bg-[#1e5d8c] hover:shadow-blue-200"
-                    )}
-                  >
-                    {isSubmitting ? <Loader2 className="animate-spin h-5 w-5" /> : !isLoggedIn ? "Inicia sesión para alquilar" : "Solicitar Alquiler"}
-                  </Button>
+                  {(() => {
+                    const currentUser = typeof window !== 'undefined' ? (JSON.parse(localStorage.getItem('user') || '{}')) : {};
+                    const isOwner = product?.id_usuario && (currentUser?.id_usuario === product?.id_usuario || currentUser?.id === product?.id_usuario);
+
+                    if (isOwner) {
+                      return (
+                        <Button 
+                          onClick={() => window.location.href = "/profile?tab=publications"}
+                          className="w-full h-14 rounded-2xl text-xs font-black uppercase tracking-wider bg-slate-800 hover:bg-slate-900 text-white shadow-lg gap-2"
+                        >
+                          <BadgeCheck className="h-4 w-4 text-emerald-400" />
+                          Tu Artículo — Gestionar en Mi Perfil
+                        </Button>
+                      );
+                    }
+
+                    return (
+                      <Button 
+                        onClick={handleRentalRequest}
+                        disabled={isLoggedIn && (!dateRange?.from || isRangeInvalid || isSubmitting)}
+                        className={cn(
+                          "w-full h-14 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl transition-all active:scale-95",
+                          !isLoggedIn ? "bg-[#1e5d8c] hover:bg-[#164a6d]" : "bg-[#1e5d8c] hover:shadow-blue-200"
+                        )}
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin h-5 w-5" /> : !isLoggedIn ? "Inicia sesión para alquilar" : "Solicitar Alquiler"}
+                      </Button>
+                    );
+                  })()}
                   
                   {product.usuario?.telefono && (
                     <Button 
