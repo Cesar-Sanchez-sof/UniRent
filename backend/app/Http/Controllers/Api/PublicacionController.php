@@ -33,6 +33,17 @@ class PublicacionController extends Controller
             $query->where('id_categoria', $request->id_categoria);
         }
 
+        // Si el usuario está autenticado, excluimos sus propias publicaciones para mostrar únicamente las de otros usuarios
+        try {
+            $user = auth('sanctum')->user() ?: $request->user();
+            if ($user) {
+                $userId = $user->id_usuario ?? $user->id;
+                if ($userId) {
+                    $query->where('id_usuario', '!=', $userId);
+                }
+            }
+        } catch (\Throwable $authErr) {}
+
         $publicaciones = $query->latest('id_publicacion')->get();
 
         return response()->json($publicaciones);
