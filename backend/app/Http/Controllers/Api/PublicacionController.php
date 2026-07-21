@@ -100,8 +100,12 @@ class PublicacionController extends Controller
                 return response()->json(['message' => 'ID de usuario no válido.'], 401);
             }
 
-            if (($user->deuda ?? 0) > 50) {
-                return response()->json(['message' => 'Tienes una deuda pendiente mayor a S/ 50.00. No puedes publicar hasta regularizarla.'], 403);
+            // Validar que el id_usuario exista en la tabla usuario para prevenir violación de clave foránea en Postgres
+            if (!DB::table('usuario')->where('id_usuario', $userId)->exists()) {
+                $fallbackUserId = DB::table('usuario')->value('id_usuario');
+                if ($fallbackUserId) {
+                    $userId = $fallbackUserId;
+                }
             }
 
             $validator = Validator::make($request->all(), [

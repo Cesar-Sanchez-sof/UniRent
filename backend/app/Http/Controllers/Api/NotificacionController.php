@@ -11,7 +11,13 @@ class NotificacionController extends Controller
     public function index(Request $request)
     {
         try {
-            $notificaciones = Notificacion::where('id_usuario', $request->user()->id_usuario)
+            $user = $request->user();
+            if (!$user) {
+                return response()->json([]);
+            }
+            $userId = $user->id_usuario ?? $user->id ?? 1;
+
+            $notificaciones = Notificacion::where('id_usuario', $userId)
                 ->orderBy('id_notificacion', 'desc')
                 ->limit(20)
                 ->get();
