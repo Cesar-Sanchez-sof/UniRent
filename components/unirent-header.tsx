@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { Search, Bell, Menu, X, ChevronDown, User, LogOut, Package, History, Plus, Home, Inbox, Check, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,6 +18,7 @@ import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
 
 export function UniRentHeader() {
+  const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userData, setUserData] = useState<any>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -85,6 +87,33 @@ export function UniRentHeader() {
       setNotifications(prev => prev.map(n => ({ ...n, leido: true })))
       setUnreadCount(0)
     } catch (e) { console.error(e) }
+  }
+
+  const handleNotificationClick = async (notif: any) => {
+    // 1. Marcar como leída primero en el backend (si está pendiente)
+    if (!notif.leido) {
+      await markAsRead(notif.id_notificacion)
+    }
+
+    // 2. Determinar a dónde redirigir según el tipo de mensaje
+    const titulo = notif.titulo || ""
+    const mensaje = notif.mensaje || ""
+
+    if (titulo.includes("Nueva Solicitud Recibida") || mensaje.includes("quiere alquilar tu")) {
+      router.push("/profile?tab=incoming")
+    } else if (titulo.includes("Actualización de Alquiler")) {
+      if (mensaje.includes("El dueño ha marcado")) {
+        router.push("/profile?tab=rentals")
+      } else {
+        router.push("/profile?tab=incoming")
+      }
+    } else if (titulo.includes("Actualización de Reclamo") || titulo.includes("incidencia")) {
+      router.push("/profile?tab=rentals")
+    } else if (titulo.includes("Actualización de Cuenta") || titulo.includes("deuda")) {
+      router.push("/profile?tab=config")
+    } else {
+      router.push("/profile")
+    }
   }
 
   const handleLogout = () => {
@@ -162,7 +191,7 @@ export function UniRentHeader() {
                               "flex flex-col items-start gap-1 p-4 cursor-pointer border-b border-border/30 last:border-0",
                               !notif.leido ? "bg-primary/[0.03]" : "opacity-70"
                             )}
-                            onClick={() => markAsRead(notif.id_notificacion)}
+                            onClick={() => handleNotificationClick(notif)}
                           >
                             <div className="flex justify-between w-full gap-2">
                               <span className={cn("text-xs font-bold leading-tight", !notif.leido && "text-primary")}>{notif.titulo}</span>
