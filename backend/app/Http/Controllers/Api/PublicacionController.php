@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Publicacion;
 use App\Models\Imagen;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -381,5 +382,14 @@ class PublicacionController extends Controller
             'tech' => 1, 'books' => 2, 'photo' => 3, 'art' => 4, 'tools' => 5, 'sports' => 6,
         ];
         return $map[$categorySlug] ?? (is_numeric($categorySlug) ? $categorySlug : 1);
+    }
+
+    /**
+     * Obtener todas las categorías.
+     */
+    public function getCategorias()
+    {
+        $categorias = Categoria::all();
+        return response()->json($categorias);
     }
 }
