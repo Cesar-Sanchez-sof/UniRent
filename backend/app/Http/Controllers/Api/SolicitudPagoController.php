@@ -41,9 +41,35 @@ class SolicitudPagoController extends Controller
 
         // Guardar comprobante si se sube directamente
         if ($request->hasFile('foto')) {
-            $path = $request->file('foto')->store('comprobantes', 'public');
-            $solicitud->comprobante_url = $path;
-            $solicitud->save();
+            $file = $request->file('foto');
+            $ext = $file->getClientOriginalExtension() ?: 'jpg';
+            $filename = 'pay_' . $solicitud->id_solicitud . '_' . time() . '.' . $ext;
+            
+            $fullUrl = null;
+
+            // 1. Intentar subir al bucket S3 / Supabase Storage si está configurado
+            try {
+                if (config('filesystems.disks.s3.key') && config('filesystems.disks.s3.bucket')) {
+                    $path = $file->storeAs('comprobantes', $filename, 's3');
+                    $s3BaseUrl = config('filesystems.disks.s3.url') ?: "https://khagadpjvxmzrouelwpu.storage.supabase.co/storage/v1/object/public/nex-us";
+                    $fullUrl = rtrim($s3BaseUrl, '/') . '/' . ltrim($path, '/');
+                }
+            } catch (\Throwable $s3Err) {}
+
+            // 2. Si S3 no está activo o falla, guardar en el disco público de Laravel
+            if (!$fullUrl) {
+                try {
+                    $path = $file->storeAs('comprobantes', $filename, 'public');
+                    $fullUrl = $path; // Guardamos ruta relativa
+                } catch (\Throwable $localErr) {
+                    $fullUrl = null;
+                }
+            }
+
+            if ($fullUrl) {
+                $solicitud->comprobante_url = $fullUrl;
+                $solicitud->save();
+            }
         }
 
         return response()->json([

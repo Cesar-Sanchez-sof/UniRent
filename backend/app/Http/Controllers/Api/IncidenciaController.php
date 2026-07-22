@@ -44,18 +44,41 @@ class IncidenciaController extends Controller
 
         $incidencia = Incidencia::findOrFail($id);
         
-        if ($incidencia->id_usuario_reportado !== auth()->id()) {
-            return response()->json(['message' => 'No tienes permiso.'], 403);
+        if ($incidencia->id_usuario_reportado !== auth()->id() && $incidencia->id_usuario_reportante !== auth()->id()) {
+            return response()->json(['message' => 'No tienes permiso para subir evidencias a este reporte.'], 403);
         }
 
-        $path = $request->file('foto')->store('incidencias', 'public');
+        $file = $request->file('foto');
+        $ext = $file->getClientOriginalExtension() ?: 'jpg';
+        $filename = 'inc_' . $incidencia->id_incidencia . '_' . time() . '.' . $ext;
         
+        $fullUrl = null;
+
+        // 1. Intentar subir al bucket S3 / Supabase Storage si está configurado
+        try {
+            if (config('filesystems.disks.s3.key') && config('filesystems.disks.s3.bucket')) {
+                $path = $file->storeAs('incidencias', $filename, 's3');
+                $s3BaseUrl = config('filesystems.disks.s3.url') ?: "https://khagadpjvxmzrouelwpu.storage.supabase.co/storage/v1/object/public/nex-us";
+                $fullUrl = rtrim($s3BaseUrl, '/') . '/' . ltrim($path, '/');
+            }
+        } catch (\Throwable $s3Err) {}
+
+        // 2. Si S3 no está activo o falla, guardar en el disco público de Laravel
+        if (!$fullUrl) {
+            try {
+                $path = $file->storeAs('incidencias', $filename, 'public');
+                $fullUrl = $path; // Guardamos ruta relativa
+            } catch (\Throwable $localErr) {
+                return response()->json(['message' => 'Error al almacenar el archivo.'], 500);
+            }
+        }
+
         $evidencias = $incidencia->evidencias ?? [];
-        $evidencias[] = $path;
+        $evidencias[] = $fullUrl;
         
         $incidencia->update(['evidencias' => $evidencias]);
 
-        return response()->json(['message' => 'Evidencia subida.', 'path' => $path]);
+        return response()->json(['message' => 'Evidencia subida.', 'path' => $fullUrl]);
     }
 
     /**

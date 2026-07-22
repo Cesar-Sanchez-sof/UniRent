@@ -1366,10 +1366,10 @@ export default function AdminDashboard() {
                   <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">Comprobante (Imagen)</p>
                   <div className="relative h-48 w-full rounded-2xl overflow-hidden border bg-slate-100 shadow-inner flex items-center justify-center">
                     <img 
-                      src={`${API_URL.replace('/api', '')}/storage/${selectedPayment.comprobante_url}`} 
+                      src={selectedPayment.comprobante_url.startsWith('http') ? selectedPayment.comprobante_url : `${API_URL.replace('/api', '')}/storage/${selectedPayment.comprobante_url}`} 
                       alt="Comprobante de Pago" 
                       className="max-w-full max-h-full object-contain cursor-zoom-in"
-                      onClick={() => window.open(`${API_URL.replace('/api', '')}/storage/${selectedPayment.comprobante_url}`, '_blank')}
+                      onClick={() => window.open(selectedPayment.comprobante_url.startsWith('http') ? selectedPayment.comprobante_url : `${API_URL.replace('/api', '')}/storage/${selectedPayment.comprobante_url}`, '_blank')}
                     />
                   </div>
                   <p className="text-[10px] text-center text-slate-400 mt-1 italic">* Haz clic en la imagen para verla en tamaño completo</p>
