@@ -30,11 +30,20 @@
 * **Artículos Prohibidos:** Queda estrictamente prohibida la publicación o alquiler de Laptops, Tablets o bienes de alto valor patrimonial para mitigar riesgos de robos de mayor impacto.
 
 ### 4. ⚖️ Sistema de Gobernanza y 3 Infracciones (Strikes)
-* **Política de 3 Strikes:** Acumular tres (3) infracciones por retraso en devoluciones, calificaciones bajas (< 3.0) o maltrato verbal resulta en la **expulsión y suspensión permanente e inapelable** de la cuenta.
+* **Política de 3 Strikes:** Acumular tres (3) Infracciones por retraso en devoluciones, calificaciones bajas (< 3.0) o maltrato verbal resulta en la **suspensión permanente** de la cuenta.
 * **Investigación Administrativa & Deuda:** Ante reportes de daños o pérdidas, la administración realiza una investigación de evidencias y genera una deuda formal al usuario agraviador para restituir el bien al dueño.
 
-### 5. ⭐ Sistema de Confianza Bidireccional
-* **Calificación Mutua:** Transacción calificada tanto por el cliente (hacia el dueño) como por el dueño (hacia el arrendatario), promediando los puntajes `puntaje_dueno` y `puntaje_arrendador` en tiempo real.
+### 5. ⚖️ Libro de Reclamaciones e Incidencias (General y Específico)
+* Acceso directo desde el footer para ingresar reclamos formales del servicio en general o incidencias específicas ligadas a un alquiler activo o completado.
+* Soporte para adjuntar imágenes de evidencias que se almacenan directamente en el bucket de Supabase (S3).
+
+### 6. 💰 Autoliquidación de Deudas y Validación del Administrador
+* Sistema interactivo para reportar pagos de comisiones (deuda > 0) adjuntando monto, número de operación y la captura del comprobante.
+* Notificación en tiempo real para todos los administradores ante cada nuevo pago reportado.
+* Ficha de aprobación donde el administrador puede verificar la transacción y autorizar el reinicio de la deuda a S/ 0 de forma automática.
+
+### 7. ⭐ Sistema de Confianza Bidireccional
+* **Calificación Mutua:** Transacción calificada tanto por el cliente (hacia el dueño) como por el dueño (hacia el arrendatario), promediando los puntajes en tiempo real.
 
 ---
 
@@ -42,15 +51,15 @@
 
 ```mermaid
 graph TD
-    A["Cliente Web / PWA (Vercel)<br/>Next.js 16 + React 19 + TailwindCSS"] -->|API REST HTTP/JSON| B["Backend API (Render)<br/>Laravel PHP 11"]
+    A["Cliente Web / PWA (Vercel)<br/>Next.js + React + TailwindCSS"] -->|API REST HTTP/JSON| B["Backend API (Render)<br/>Laravel PHP"]
     B -->|Consultas SQL / ORM| C["Base de Datos Relacional<br/>Supabase (PostgreSQL)"]
-    B -->|Upload Evidencias / Fotos| D["Almacenamiento Cloud<br/>AWS S3 Storage"]
+    B -->|Upload Evidencias / Comprobantes| D["Supabase Storage<br/>S3-Compatible Bucket"]
 ```
 
-* **Frontend:** Next.js 16 (App Router), React 19, TailwindCSS, Lucide React Icons (Desplegado en **Vercel**).
-* **Backend:** API REST en Laravel 11 PHP (Desplegado en **Render**).
+* **Frontend:** Next.js (App Router), React, TailwindCSS, Lucide React Icons (Desplegado en **Vercel**).
+* **Backend:** API REST en Laravel PHP (Desplegado en **Render**).
 * **Base de Datos:** PostgreSQL administrado en **Supabase**.
-* **Almacenamiento Cloud:** **AWS S3 Storage** para imágenes de productos y fotos de perfil.
+* **Almacenamiento Cloud:** **Supabase Storage (S3 API)** para imágenes de productos, evidencias de reclamos y comprobantes de pagos.
 
 ---
 
@@ -58,15 +67,17 @@ graph TD
 
 ```
 app/
-├── page.tsx            # Landing Page Comercial comercial
+├── page.tsx            # Landing Page Comercial
 ├── marketplace/
 │   └── page.tsx        # Catálogo principal PWA del Marketplace
 ├── terms/
 │   └── page.tsx        # Términos, Condiciones Legales y Reglas de Gobernanza
 ├── login/              # Formulario de inicio de sesión
 ├── register/           # Registro KYC de 2 pasos con checkbox legal
-├── profile/            # Panel de control del usuario (Configuración, Publicaciones, Alquileres, Solicitudes)
-└── publish/            # Formulario de publicación con validación (máx. S/ 200)
+├── profile/            # Panel de control del usuario (Configuración, Publicaciones, Alquileres, Reportar Pagos)
+├── publish/            # Formulario de publicación con categorías dinámicas
+└── admin/
+    └── page.tsx        # Dashboard del Administrador (Métricas, CRUD Categorías/U., Cobranzas y Reclamaciones)
 ```
 
 ---
