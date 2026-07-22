@@ -14,9 +14,6 @@ import {
   Plus,
   X,
   ChevronDown,
-  Laptop,
-  BookOpen,
-  Camera,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -95,18 +92,6 @@ export function PublishForm() {
     fetchCats()
   }, [])
 
-  const getCategoryIcon = (id: string) => {
-    switch (id.toString()) {
-      case "1":
-        return <Laptop className="h-5 w-5" />
-      case "2":
-        return <BookOpen className="h-5 w-5" />
-      case "3":
-        return <Camera className="h-5 w-5" />
-      default:
-        return <Tag className="h-5 w-5" />
-    }
-  }
 
   const [condition, setCondition] = useState("")
   const [pricePerDay, setPricePerDay] = useState("")
@@ -470,7 +455,7 @@ export function PublishForm() {
           {/* Category */}
           <div className="flex flex-col gap-2">
             <Label className="text-foreground text-sm font-medium">Categoría</Label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {(dbCategories.length > 0 ? dbCategories : [
                 { id_categoria: 1, nombre: "Tecnología" },
                 { id_categoria: 2, nombre: "Libros" },
@@ -484,19 +469,13 @@ export function PublishForm() {
                     type="button"
                     onClick={() => setCategory(catId)}
                     className={cn(
-                      "flex flex-col items-center justify-center gap-2 rounded-xl border-2 py-3.5 px-2 transition-all text-center cursor-pointer",
+                      "py-3.5 px-4 rounded-2xl border-2 transition-all text-center cursor-pointer font-bold text-xs uppercase tracking-wider",
                       isSelected
-                        ? "border-[#1e5d8c] bg-blue-50/40 text-[#1e5d8c]"
-                        : "border-border text-muted-foreground hover:border-[#1e5d8c]/30 hover:text-foreground"
+                        ? "border-[#1e5d8c] bg-blue-50/40 text-[#1e5d8c] shadow-sm shadow-[#1e5d8c]/5"
+                        : "border-border text-slate-500 hover:border-[#1e5d8c]/30 hover:text-slate-700 bg-white"
                     )}
                   >
-                    <div className={cn(
-                      "transition-colors",
-                      isSelected ? "text-[#1e5d8c]" : "text-slate-400"
-                    )}>
-                      {getCategoryIcon(catId)}
-                    </div>
-                    <span className="text-[11px] font-bold leading-tight">{cat.nombre}</span>
+                    {cat.nombre}
                   </button>
                 )
               })}
