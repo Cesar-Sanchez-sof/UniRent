@@ -345,4 +345,68 @@ class AdminController extends Controller
             'message' => 'Universidad eliminada con éxito.'
         ]);
     }
+
+    /**
+     * Obtener todas las solicitudes de pago de comisiones.
+     */
+    public function getSolicitudesPago(Request $request)
+    {
+        $this->checkAdmin($request);
+
+        $solicitudes = \App\Models\SolicitudPago::with('usuario')
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        return response()->json($solicitudes);
+    }
+
+    /**
+     * Procesar (Aprobar/Rechazar) una solicitud de pago.
+     */
+    public function processSolicitudPago(Request $request, $id)
+    {
+        $this->checkAdmin($request);
+
+        $request->validate([
+            'estado' => 'required|in:Aprobado,Rechazado'
+        ]);
+
+        $solicitud = \App\Models\SolicitudPago::findOrFail($id);
+        $solicitud->estado = $request->estado;
+        $solicitud->save();
+
+        $user = \App\Models\User::findOrFail($solicitud->id_usuario);
+
+        if ($request->estado === 'Aprobado') {
+            // Modificar la deuda a 0!
+            $user->deuda = 0.00;
+            $user->save();
+
+            // Notificar al usuario
+            try {
+                \App\Models\Notificacion::create([
+                    'id_usuario' => $user->id_usuario,
+                    'titulo' => 'Pago de Deuda Aprobado',
+                    'mensaje' => "Tu comprobante de pago por S/ " . number_format($solicitud->monto, 2) . " (Nro. Op: {$solicitud->nro_operacion}) ha sido verificado. Tu deuda actual es S/ 0.00.",
+                    'leido' => false
+                ]);
+            } catch (\Exception $e) {}
+        } else {
+            // Notificar rechazo
+            try {
+                \App\Models\Notificacion::create([
+                    'id_usuario' => $user->id_usuario,
+                    'titulo' => 'Pago de Deuda Rechazado',
+                    'mensaje' => "Tu comprobante de pago por S/ " . number_format($solicitud->monto, 2) . " (Nro. Op: {$solicitud->nro_operacion}) fue rechazado. Por favor verifica los datos.",
+                    'leido' => false
+                ]);
+            } catch (\Exception $e) {}
+        }
+
+        return response()->json([
+            'message' => 'Solicitud de pago procesada con éxito.',
+            'solicitud' => $solicitud,
+            'user' => $user
+        ]);
+    }
 }

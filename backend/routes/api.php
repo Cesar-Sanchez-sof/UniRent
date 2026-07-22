@@ -52,12 +52,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/incidencias', [\App\Http\Controllers\Api\IncidenciaController::class, 'store']);
     Route::post('/incidencias/{id}/evidence', [\App\Http\Controllers\Api\IncidenciaController::class, 'uploadEvidence']);
 
+    // Solicitudes de Pago
+    Route::get('/user/solicitudes-pago', [\App\Http\Controllers\Api\SolicitudPagoController::class, 'index']);
+    Route::post('/solicitudes-pago', [\App\Http\Controllers\Api\SolicitudPagoController::class, 'store']);
+
     // Rutas Administrativas
     Route::get('/admin/metrics', [\App\Http\Controllers\Api\AdminController::class, 'getMetrics']);
     Route::get('/admin/users-debt', [\App\Http\Controllers\Api\AdminController::class, 'getUsersDebt']);
     Route::post('/admin/users-debt/{id}', [\App\Http\Controllers\Api\AdminController::class, 'updateUserDebt']);
     Route::get('/admin/incidencias', [\App\Http\Controllers\Api\AdminController::class, 'getIncidencias']);
     Route::patch('/admin/incidencias/{id}/status', [\App\Http\Controllers\Api\AdminController::class, 'updateIncidenciaStatus']);
+    Route::get('/admin/solicitudes-pago', [\App\Http\Controllers\Api\AdminController::class, 'getSolicitudesPago']);
+    Route::post('/admin/solicitudes-pago/{id}/procesar', [\App\Http\Controllers\Api\AdminController::class, 'processSolicitudPago']);
     
     // CRUD Categorías Admin
     Route::post('/admin/categorias', [\App\Http\Controllers\Api\AdminController::class, 'storeCategoria']);

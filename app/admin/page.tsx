@@ -58,6 +58,69 @@ export default function AdminDashboard() {
   const [selectedClaim, setSelectedClaim] = useState<any>(null)
   const [updatingClaimStatus, setUpdatingClaimStatus] = useState(false)
 
+  // Estados para gestionar solicitudes de pago
+  const [paymentRequests, setPaymentRequests] = useState<any[]>([])
+  const [activeSubTab, setActiveSubTab] = useState<'users' | 'requests'>('users')
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false)
+  const [selectedPayment, setSelectedPayment] = useState<any>(null)
+  const [showPaymentDetailModal, setShowPaymentDetailModal] = useState(false)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+
+  const fetchPaymentRequests = async () => {
+    const token = localStorage.getItem('auth_token')
+    if (!token) return
+    setIsLoadingPayments(true)
+    try {
+      const res = await fetch(`${API_URL}/admin/solicitudes-pago`, {
+        headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
+      })
+      if (res.ok) {
+        setPaymentRequests(await res.json())
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsLoadingPayments(false)
+    }
+  }
+
+  const handleProcessPayment = async (id: number, estado: 'Aprobado' | 'Rechazado') => {
+    setIsProcessingPayment(true)
+    const token = localStorage.getItem('auth_token')
+    try {
+      const res = await fetch(`${API_URL}/admin/solicitudes-pago/${id}/procesar`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ estado })
+      })
+
+      if (res.ok) {
+        toast({
+          title: `Solicitud de pago ${estado.toLowerCase()} con éxito.`,
+          description: estado === 'Aprobado' ? "La deuda del usuario se actualizó a S/ 0." : "El pago fue rechazado."
+        })
+        setShowPaymentDetailModal(false)
+        fetchPaymentRequests()
+        fetchUsersDebt()
+      } else {
+        const err = await res.json()
+        throw new Error(err.message || "Error al procesar la solicitud.")
+      }
+    } catch (e: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: e.message || "No se pudo procesar la solicitud."
+      })
+    } finally {
+      setIsProcessingPayment(false)
+    }
+  }
+
   // Verify Admin role
   useEffect(() => {
     const token = localStorage.getItem('auth_token')
@@ -93,7 +156,10 @@ export default function AdminDashboard() {
     if (activeTab === 'metrics') fetchMetrics()
     if (activeTab === 'categories') fetchCategories()
     if (activeTab === 'universities') fetchUniversities()
-    if (activeTab === 'debts') fetchUsersDebt()
+    if (activeTab === 'debts') {
+      fetchUsersDebt()
+      fetchPaymentRequests()
+    }
     if (activeTab === 'claims') fetchClaims()
   }, [activeTab, isAdmin])
 
@@ -715,59 +781,154 @@ export default function AdminDashboard() {
             {/* 4. TAB DEBTS */}
             {activeTab === 'debts' && (
               <div className="bg-white border rounded-3xl p-6 shadow-sm">
-                <div className="mb-6">
-                  <h3 className="text-lg font-black tracking-tight text-slate-900">Cobranzas & Control de Deuda</h3>
-                  <p className="text-xs text-slate-400 font-medium">Monitorea y ajusta de forma manual la deuda acumulada de comisión de los arrendadores de la plataforma.</p>
+                <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div>
+                    <h3 className="text-lg font-black tracking-tight text-slate-900">Cobranzas & Control de Deuda</h3>
+                    <p className="text-xs text-slate-400 font-medium">Monitorea deudas acumuladas de comisiones y valida los pagos enviados por los arrendadores.</p>
+                  </div>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px] tracking-wider">
-                        <th className="py-4 px-6">Estudiante</th>
-                        <th className="py-4 px-6">Usuario / Correo</th>
-                        <th className="py-4 px-6">Teléfono</th>
-                        <th className="py-4 px-6">Deuda Acumulada</th>
-                        <th className="py-4 px-6 text-right">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50 font-medium">
-                      {usersDebt.length > 0 ? (
-                        usersDebt.map((user) => (
-                          <tr key={user.id_usuario} className={cn("hover:bg-slate-50/55 transition-colors", Number(user.deuda) > 0 ? "bg-red-50/10 hover:bg-red-50/20" : "")}>
-                            <td className="py-4 px-6">
-                              <p className="font-bold text-slate-900">{user.primer_nombre} {user.primer_apellido}</p>
-                            </td>
-                            <td className="py-4 px-6 text-xs">
-                              <span className="text-slate-500 font-bold">@{user.username}</span>
-                              <p className="text-slate-400">{user.correo}</p>
-                            </td>
-                            <td className="py-4 px-6 text-xs text-slate-500 font-semibold">{user.telefono}</td>
-                            <td className="py-4 px-6">
-                              <span className={cn("font-black text-sm px-3 py-1 rounded-full", 
-                                Number(user.deuda) > 0 ? "bg-red-100 text-red-700 font-black animate-pulse" : "bg-green-100 text-green-700")}>
-                                S/ {Number(user.deuda).toFixed(2)}
-                              </span>
-                            </td>
-                            <td className="py-4 px-6 text-right">
-                              <Button 
-                                size="sm" 
-                                onClick={() => handleOpenDebtModal(user)}
-                                className="rounded-xl gap-1 text-xs font-bold bg-[#1e5d8c] hover:bg-[#164a6d] text-white"
-                              >
-                                <DollarSign className="h-3.5 w-3.5" /> Ajustar Saldo
-                              </Button>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={5} className="py-12 text-center text-slate-400">No hay usuarios registrados.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                {/* Sub-tabs de Cobranzas */}
+                <div className="flex gap-6 border-b border-slate-100 pb-3 mb-6">
+                  <button
+                    onClick={() => setActiveSubTab('users')}
+                    className={cn(
+                      "text-xs font-black uppercase tracking-wider pb-1.5 border-b-2 transition-all cursor-pointer",
+                      activeSubTab === 'users'
+                        ? "border-[#1e5d8c] text-[#1e5d8c]"
+                        : "border-transparent text-slate-400 hover:text-slate-600"
+                    )}
+                  >
+                    Usuarios Deudores
+                  </button>
+                  <button
+                    onClick={() => setActiveSubTab('requests')}
+                    className={cn(
+                      "text-xs font-black uppercase tracking-wider pb-1.5 border-b-2 transition-all flex items-center gap-2 cursor-pointer",
+                      activeSubTab === 'requests'
+                        ? "border-[#1e5d8c] text-[#1e5d8c]"
+                        : "border-transparent text-slate-400 hover:text-slate-600"
+                    )}
+                  >
+                    Solicitudes de Pago
+                    {paymentRequests.filter(r => r.estado === 'Pendiente').length > 0 && (
+                      <span className="bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full animate-bounce">
+                        {paymentRequests.filter(r => r.estado === 'Pendiente').length}
+                      </span>
+                    )}
+                  </button>
                 </div>
+
+                {activeSubTab === 'users' ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                          <th className="py-4 px-6">Estudiante</th>
+                          <th className="py-4 px-6">Usuario / Correo</th>
+                          <th className="py-4 px-6">Teléfono</th>
+                          <th className="py-4 px-6">Deuda Acumulada</th>
+                          <th className="py-4 px-6 text-right">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50 font-medium">
+                        {usersDebt.length > 0 ? (
+                          usersDebt.map((user) => (
+                            <tr key={user.id_usuario} className={cn("hover:bg-slate-50/55 transition-colors", Number(user.deuda) > 0 ? "bg-red-50/10 hover:bg-red-50/20" : "")}>
+                              <td className="py-4 px-6">
+                                <p className="font-bold text-slate-900">{user.primer_nombre} {user.primer_apellido}</p>
+                              </td>
+                              <td className="py-4 px-6 text-xs">
+                                <span className="text-slate-500 font-bold">@{user.username}</span>
+                                <p className="text-slate-400">{user.correo}</p>
+                              </td>
+                              <td className="py-4 px-6 text-xs text-slate-500 font-semibold">{user.telefono}</td>
+                              <td className="py-4 px-6">
+                                <span className={cn("font-black text-sm px-3 py-1 rounded-full", 
+                                  Number(user.deuda) > 0 ? "bg-red-100 text-red-700 font-black animate-pulse" : "bg-green-100 text-green-700")}>
+                                  S/ {Number(user.deuda).toFixed(2)}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6 text-right">
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => handleOpenDebtModal(user)}
+                                  className="rounded-xl gap-1 text-xs font-bold bg-[#1e5d8c] hover:bg-[#164a6d] text-white"
+                                >
+                                  <DollarSign className="h-3.5 w-3.5" /> Ajustar Saldo
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={5} className="py-12 text-center text-slate-400">No hay usuarios registrados.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead>
+                        <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                          <th className="py-4 px-6">Usuario / Estudiante</th>
+                          <th className="py-4 px-6">Monto Reportado</th>
+                          <th className="py-4 px-6">Nro. Operación</th>
+                          <th className="py-4 px-6">Fecha Envío</th>
+                          <th className="py-4 px-6">Estado</th>
+                          <th className="py-4 px-6 text-right">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50 font-medium text-xs">
+                        {paymentRequests.length > 0 ? (
+                          paymentRequests.map((req) => (
+                            <tr key={req.id_solicitud} className="hover:bg-slate-50/55 transition-colors">
+                              <td className="py-4 px-6 text-xs">
+                                <p className="font-bold text-slate-900">{req.usuario?.primer_nombre} {req.usuario?.primer_apellido}</p>
+                                <p className="text-slate-400">@{req.usuario?.username} | Telf: {req.usuario?.telefono}</p>
+                              </td>
+                              <td className="py-4 px-6">
+                                <span className="font-black text-sm text-slate-950">S/ {Number(req.monto).toFixed(2)}</span>
+                              </td>
+                              <td className="py-4 px-6 font-mono text-slate-500 font-semibold">{req.nro_operacion}</td>
+                              <td className="py-4 px-6 text-slate-400 font-medium">
+                                {new Date(req.created_at).toLocaleDateString('es-PE')}
+                              </td>
+                              <td className="py-4 px-6">
+                                <span className={cn(
+                                  "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wide",
+                                  req.estado === 'Pendiente' && "bg-amber-100 text-amber-700",
+                                  req.estado === 'Aprobado' && "bg-green-100 text-green-700",
+                                  req.estado === 'Rechazado' && "bg-red-100 text-red-700"
+                                )}>
+                                  {req.estado}
+                                </span>
+                              </td>
+                              <td className="py-4 px-6 text-right">
+                                <Button
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedPayment(req);
+                                    setShowPaymentDetailModal(true);
+                                  }}
+                                  className="rounded-xl bg-[#1e5d8c] hover:bg-[#164a6d] text-white text-xs font-bold"
+                                >
+                                  Ver Detalles
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="py-12 text-center text-slate-400">No hay solicitudes de pago registradas.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
 
@@ -1155,6 +1316,102 @@ export default function AdminDashboard() {
                   Cerrar Ficha
                 </Button>
               </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* DETAIL MODAL FOR PAYMENT REQUEST */}
+      <Dialog open={showPaymentDetailModal} onOpenChange={setShowPaymentDetailModal}>
+        <DialogContent className="rounded-3xl sm:max-w-md p-6 bg-white border border-slate-100 shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2 text-slate-800">
+              <DollarSign className="h-5 w-5 text-green-600 bg-green-50 rounded-lg p-0.5" /> Ficha de Pago #{selectedPayment?.id_solicitud}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground font-medium">
+              Verifica los detalles del comprobante para aprobar el pago y reiniciar la deuda del usuario.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedPayment && (
+            <div className="space-y-4 mt-4">
+              <div className="border p-4 rounded-2xl bg-slate-50 space-y-1 text-xs">
+                <p className="font-bold text-slate-800">Datos del Estudiante:</p>
+                <p className="text-slate-600">Nombre: <span className="font-bold">{selectedPayment.usuario?.primer_nombre} {selectedPayment.usuario?.primer_apellido}</span></p>
+                <p className="text-slate-600">Usuario: <span className="font-bold">@{selectedPayment.usuario?.username}</span></p>
+                <p className="text-slate-600">Telf: <span className="font-bold">{selectedPayment.usuario?.telefono}</span></p>
+                <p className="text-slate-600">DNI: <span className="font-bold">{selectedPayment.usuario?.dni}</span></p>
+              </div>
+
+              <div className="border p-4 rounded-2xl bg-slate-50 space-y-1 text-xs">
+                <p className="font-bold text-slate-800">Datos del Pago:</p>
+                <p className="text-slate-600">Monto Reportado: <span className="font-bold text-slate-900 text-sm">S/ {Number(selectedPayment.monto).toFixed(2)}</span></p>
+                <p className="text-slate-600">Nro. Operación: <span className="font-mono font-bold text-slate-900">{selectedPayment.nro_operacion}</span></p>
+                <p className="text-slate-600">Fecha Envío: <span className="font-bold text-slate-700">{new Date(selectedPayment.created_at).toLocaleString('es-PE')}</span></p>
+                <p className="text-slate-600">Estado: 
+                  <span className={cn(
+                    "ml-1.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide",
+                    selectedPayment.estado === 'Pendiente' && "bg-amber-100 text-amber-700",
+                    selectedPayment.estado === 'Aprobado' && "bg-green-100 text-green-700",
+                    selectedPayment.estado === 'Rechazado' && "bg-red-100 text-red-700"
+                  )}>
+                    {selectedPayment.estado}
+                  </span>
+                </p>
+              </div>
+
+              {/* Imagen del Comprobante */}
+              {selectedPayment.comprobante_url ? (
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase font-black tracking-wider text-slate-400">Comprobante (Imagen)</p>
+                  <div className="relative h-48 w-full rounded-2xl overflow-hidden border bg-slate-100 shadow-inner flex items-center justify-center">
+                    <img 
+                      src={`${API_URL.replace('/api', '')}/storage/${selectedPayment.comprobante_url}`} 
+                      alt="Comprobante de Pago" 
+                      className="max-w-full max-h-full object-contain cursor-zoom-in"
+                      onClick={() => window.open(`${API_URL.replace('/api', '')}/storage/${selectedPayment.comprobante_url}`, '_blank')}
+                    />
+                  </div>
+                  <p className="text-[10px] text-center text-slate-400 mt-1 italic">* Haz clic en la imagen para verla en tamaño completo</p>
+                </div>
+              ) : (
+                <div className="p-4 bg-slate-100 border border-slate-200 text-center rounded-2xl text-xs text-slate-500 font-bold">
+                  No se cargó ninguna foto del comprobante.
+                </div>
+              )}
+
+              {/* Botones de Acción */}
+              <div className="border-t pt-4 flex gap-2 justify-end">
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setShowPaymentDetailModal(false)}
+                  className="rounded-xl font-bold text-xs"
+                >
+                  Cerrar
+                </Button>
+                {selectedPayment.estado === 'Pendiente' ? (
+                  <>
+                    <Button 
+                      disabled={isProcessingPayment}
+                      onClick={() => handleProcessPayment(selectedPayment.id_solicitud, 'Rechazado')}
+                      className="rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-4"
+                    >
+                      Rechazar
+                    </Button>
+                    <Button 
+                      disabled={isProcessingPayment}
+                      onClick={() => handleProcessPayment(selectedPayment.id_solicitud, 'Aprobado')}
+                      className="rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs px-4"
+                    >
+                      Aprobar (Deuda S/ 0)
+                    </Button>
+                  </>
+                ) : (
+                  <span className="text-xs font-semibold text-muted-foreground italic flex items-center">
+                    Procesado como: {selectedPayment.estado}
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </DialogContent>

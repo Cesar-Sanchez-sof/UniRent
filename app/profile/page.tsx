@@ -122,6 +122,92 @@ function ProfileContent() {
   const [showPassModal, setShowPassModal] = useState(false)
   const [passData, setPassData] = useState({ current_password: "", new_password: "", new_password_confirmation: "" })
 
+  // Estados para reporte de pagos
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [paymentAmount, setPaymentAmount] = useState("")
+  const [paymentOpNumber, setPaymentOpNumber] = useState("")
+  const [paymentVoucher, setPaymentVoucher] = useState<File | null>(null)
+  const [paymentVoucherPreview, setPaymentVoucherPreview] = useState<string | null>(null)
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false)
+  const [paymentHistory, setPaymentHistory] = useState<any[]>([])
+  const [isLoadingPaymentHistory, setIsLoadingPaymentHistory] = useState(false)
+  const paymentFileInputRef = useRef<HTMLInputElement>(null)
+
+  const fetchPaymentHistory = async () => {
+    const token = localStorage.getItem('auth_token')
+    if (!token) return
+    setIsLoadingPaymentHistory(true)
+    try {
+      const res = await fetch(`${API_URL}/user/solicitudes-pago`, {
+        headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" }
+      })
+      if (res.ok) {
+        setPaymentHistory(await res.json())
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setIsLoadingPaymentHistory(false)
+    }
+  }
+
+  const handleSubmitPayment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!paymentAmount || Number(paymentAmount) <= 0) {
+      return toast({ variant: "destructive", title: "Monto inválido", description: "Por favor ingresa un monto válido a reportar." })
+    }
+    if (!paymentOpNumber.trim()) {
+      return toast({ variant: "destructive", title: "Falta número de operación", description: "Por favor ingresa el número de operación del pago." })
+    }
+
+    setIsSubmittingPayment(true)
+    const token = localStorage.getItem('auth_token')
+
+    try {
+      const form = new FormData()
+      form.append('monto', paymentAmount)
+      form.append('nro_operacion', paymentOpNumber)
+      if (paymentVoucher) {
+        form.append('foto', paymentVoucher)
+      }
+
+      const res = await fetch(`${API_URL}/solicitudes-pago`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json"
+        },
+        body: form
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.message || "Error al registrar el pago.")
+      }
+
+      toast({
+        title: "Pago reportado correctamente",
+        description: "El administrador verificará tu comprobante y actualizará tu deuda a S/ 0."
+      })
+
+      setPaymentAmount("")
+      setPaymentOpNumber("")
+      setPaymentVoucher(null)
+      setPaymentVoucherPreview(null)
+      setShowPaymentModal(false)
+      fetchPaymentHistory()
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: err.message || "No se pudo registrar la solicitud."
+      })
+    } finally {
+      setIsSubmittingPayment(false)
+    }
+  }
+
   const [formData, setFormData] = useState({
     primer_nombre: "", segundo_nombre: "", primer_apellido: "", segundo_apellido: "",
     username: "", correo: "", telefono: ""
@@ -192,12 +278,12 @@ function ProfileContent() {
     fetchUser()
   }, [])
 
-  // Carga de pestañas
   useEffect(() => {
     if (user) {
       if (activeTab === 'publications') fetchMyPublications()
       if (activeTab === 'rentals') fetchMyRentals()
       if (activeTab === 'incoming') fetchIncomingRentals()
+      if (activeTab === 'config') fetchPaymentHistory()
     }
   }, [activeTab, user])
 
@@ -825,18 +911,57 @@ function ProfileContent() {
                     {Number(user?.deuda) > 0 && (
                       <Button 
                         className="rounded-2xl bg-red-600 hover:bg-red-700 text-white font-black px-8 h-14 shadow-xl shadow-red-200 transition-all active:scale-95 group"
-                        onClick={() => toast({ 
-                          title: "Módulo de Pagos", 
-                          description: "Estamos trabajando en una pasarela de pagos sin comisiones extra para ti.",
-                          className: "bg-white border-red-200"
-                        })}
+                        onClick={() => {
+                          setPaymentAmount(Number(user?.deuda || 0).toFixed(2));
+                          setShowPaymentModal(true);
+                        }}
                       >
-                        Pagar Deuda
-                        <CheckCircle2 className="ml-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        Reportar Pago
+                        <DollarSign className="ml-2 h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </Button>
                     )}
                   </div>
                 </div>
+
+                {/* Historial de Reportes de Pago */}
+                {paymentHistory.length > 0 && (
+                  <div className="bg-white rounded-2xl border border-border p-6 shadow-sm space-y-4">
+                    <h4 className="text-sm font-black uppercase tracking-wider text-slate-800">Historial de Reportes de Pago</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs text-left">
+                        <thead>
+                          <tr className="border-b text-slate-400">
+                            <th className="pb-2">Fecha</th>
+                            <th className="pb-2">Monto</th>
+                            <th className="pb-2">Nro. Operación</th>
+                            <th className="pb-2">Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paymentHistory.map((item: any) => (
+                            <tr key={item.id_solicitud} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
+                              <td className="py-2.5 font-medium text-slate-600">
+                                {new Date(item.created_at).toLocaleDateString('es-PE')}
+                              </td>
+                              <td className="py-2.5 font-bold text-slate-900">S/ {formatPrice(Number(item.monto))}</td>
+                              <td className="py-2.5 font-mono text-slate-500">{item.nro_operacion}</td>
+                              <td className="py-2.5">
+                                <span className={cn(
+                                  "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide",
+                                  item.estado === 'Pendiente' && "bg-amber-100 text-amber-700",
+                                  item.estado === 'Aprobado' && "bg-green-100 text-green-700",
+                                  item.estado === 'Rechazado' && "bg-red-100 text-red-700"
+                                )}>
+                                  {item.estado}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
 
                 <div className="bg-card rounded-2xl border border-border shadow-md overflow-hidden bg-white">
                 <div className="px-8 py-6 border-b border-border flex justify-between items-center bg-card">
@@ -1252,6 +1377,122 @@ function ProfileContent() {
               <Button type="submit" disabled={isSubmittingReport} className="rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold px-6">
                 {isSubmittingReport ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Enviar Reclamo
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL REPORTAR PAGO */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent className="rounded-3xl sm:max-w-md p-6 bg-white border border-border shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2 text-slate-800">
+              <DollarSign className="h-5 w-5 text-green-600 bg-green-50 rounded-lg p-0.5" /> Reportar Pago de Deuda
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground font-medium">
+              Por favor realiza el pago mediante Yape/Plin o transferencia bancaria y reporta los detalles para validar tu cuenta.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Instrucciones de Pago */}
+          <div className="bg-slate-50 border rounded-2xl p-4 text-xs space-y-2 text-slate-600">
+            <p className="font-bold text-slate-800">Métodos de Pago Autorizados:</p>
+            <div className="flex justify-between border-b pb-1.5 border-dashed">
+              <span>Yape / Plin (Soporte):</span>
+              <span className="font-bold text-slate-900">907 905 925</span>
+            </div>
+            <div className="flex justify-between">
+              <span>BCP (Cuenta Corriente):</span>
+              <span className="font-bold text-slate-900">191-99887766-0-12</span>
+            </div>
+            <p className="text-[10px] text-muted-foreground pt-1">
+              * El administrador validará el número de operación y actualizará tu deuda a S/ 0 en un plazo máximo de 24 horas.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmitPayment} className="space-y-4 mt-2">
+            <div className="space-y-1">
+              <Label>Monto a Reportar (S/)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                required
+                value={paymentAmount}
+                onChange={e => setPaymentAmount(e.target.value)}
+                className="rounded-xl h-11"
+                placeholder="0.00"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label>Número de Operación (Voucher)</Label>
+              <Input
+                type="text"
+                required
+                value={paymentOpNumber}
+                onChange={e => setPaymentOpNumber(e.target.value)}
+                className="rounded-xl h-11"
+                placeholder="Ej. 12345678"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Foto del Comprobante (Opcional)</Label>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl gap-2 border-border text-xs"
+                  onClick={() => paymentFileInputRef.current?.click()}
+                >
+                  <Camera className="h-4 w-4" /> Seleccionar Imagen
+                </Button>
+                <input
+                  type="file"
+                  ref={paymentFileInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={e => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      setPaymentVoucher(file)
+                      setPaymentVoucherPreview(URL.createObjectURL(file))
+                    }
+                  }}
+                />
+                {paymentVoucher && (
+                  <span className="text-[10px] text-muted-foreground truncate max-w-[180px]">
+                    {paymentVoucher.name}
+                  </span>
+                )}
+              </div>
+              {paymentVoucherPreview && (
+                <div className="relative mt-2 h-32 w-full rounded-xl overflow-hidden border">
+                  <img src={paymentVoucherPreview} alt="Comprobante" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => { setPaymentVoucher(null); setPaymentVoucherPreview(null); }}
+                    className="absolute top-1.5 right-1.5 bg-black/60 text-white rounded-full p-1 hover:bg-black"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-0 mt-6 flex justify-end">
+              <Button type="button" variant="ghost" onClick={() => setShowPaymentModal(false)} className="rounded-xl text-xs">
+                Cerrar
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isSubmittingPayment}
+                className="rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold px-6 text-xs"
+              >
+                {isSubmittingPayment ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}
+                Enviar Reporte
               </Button>
             </DialogFooter>
           </form>
