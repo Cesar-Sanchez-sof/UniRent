@@ -74,6 +74,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
  * Rutas públicas de productos
  */
 Route::get('/publicaciones', [PublicacionController::class, 'index']);
+Route::get('/categorias', [PublicacionController::class, 'getCategorias']);
 Route::get('/publicaciones/{id}', [PublicacionController::class, 'show']);
 Route::get('/publicaciones/{id}/booked-dates', [\App\Http\Controllers\Api\AlquilerController::class, 'getBookedDates']);
 Route::get('/publicaciones/{id}/resenas', [\App\Http\Controllers\Api\ResenaController::class, 'getByPublicacion']);
