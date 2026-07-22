@@ -49,7 +49,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Incidencias
     Route::get('/user/incidencias', [\App\Http\Controllers\Api\IncidenciaController::class, 'index']);
     Route::get('/user/incidencias/count', [\App\Http\Controllers\Api\IncidenciaController::class, 'count']);
+    Route::post('/incidencias', [\App\Http\Controllers\Api\IncidenciaController::class, 'store']);
     Route::post('/incidencias/{id}/evidence', [\App\Http\Controllers\Api\IncidenciaController::class, 'uploadEvidence']);
+
+    // Rutas Administrativas
+    Route::get('/admin/metrics', [\App\Http\Controllers\Api\AdminController::class, 'getMetrics']);
+    Route::get('/admin/users-debt', [\App\Http\Controllers\Api\AdminController::class, 'getUsersDebt']);
+    Route::post('/admin/users-debt/{id}', [\App\Http\Controllers\Api\AdminController::class, 'updateUserDebt']);
+    Route::get('/admin/incidencias', [\App\Http\Controllers\Api\AdminController::class, 'getIncidencias']);
+    Route::patch('/admin/incidencias/{id}/status', [\App\Http\Controllers\Api\AdminController::class, 'updateIncidenciaStatus']);
+    
+    // CRUD Categorías Admin
+    Route::post('/admin/categorias', [\App\Http\Controllers\Api\AdminController::class, 'storeCategoria']);
+    Route::put('/admin/categorias/{id}', [\App\Http\Controllers\Api\AdminController::class, 'updateCategoria']);
+    Route::delete('/admin/categorias/{id}', [\App\Http\Controllers\Api\AdminController::class, 'destroyCategoria']);
+
+    // CRUD Universidades Admin
+    Route::post('/admin/universidades', [\App\Http\Controllers\Api\AdminController::class, 'storeUniversidad']);
+    Route::put('/admin/universidades/{id}', [\App\Http\Controllers\Api\AdminController::class, 'updateUniversidad']);
+    Route::delete('/admin/universidades/{id}', [\App\Http\Controllers\Api\AdminController::class, 'destroyUniversidad']);
 });
 
 /**

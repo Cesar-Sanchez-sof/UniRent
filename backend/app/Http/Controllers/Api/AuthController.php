@@ -109,6 +109,7 @@ class AuthController extends Controller
                 'deuda'            => $user->deuda,
                 'puntaje_dueno'    => $user->puntaje_dueno,
                 'puntaje_arrendador' => $user->puntaje_arrendador,
+                'is_admin'           => $user->isAdmin(),
             ]
         ]);
     }

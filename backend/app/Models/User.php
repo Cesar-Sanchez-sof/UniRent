@@ -35,6 +35,7 @@ class User extends Authenticatable
         'deuda', // Nuevo campo para control de mora/recargas
         'id_universidad',
         'foto_perfil',
+        'is_admin',
     ];
 
     /**
@@ -71,9 +72,15 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
             'estado' => 'boolean',
+            'is_admin' => 'boolean',
             'puntaje_dueno' => 'decimal:1',
             'puntaje_arrendador' => 'decimal:1',
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return (bool)$this->is_admin || $this->correo === 'admin@unirent.com';
     }
 
     public function universidad()

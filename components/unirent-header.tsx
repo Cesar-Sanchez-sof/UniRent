@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Search, Bell, Menu, X, ChevronDown, User, LogOut, Package, History, Plus, Home, Inbox, Check } from "lucide-react"
+import { Search, Bell, Menu, X, ChevronDown, User, LogOut, Package, History, Plus, Home, Inbox, Check, ShieldCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -233,6 +233,14 @@ export function UniRentHeader() {
                     >
                       <History className="h-4 w-4" /> <span className="text-sm font-medium">Mis Alquileres</span>
                     </DropdownMenuItem>
+                    {(userData?.is_admin || userData?.correo === 'admin@unirent.com') && (
+                      <DropdownMenuItem 
+                        onClick={() => window.location.href = "/admin"}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-primary/10 text-primary border-b border-border/50"
+                      >
+                        <ShieldCheck className="h-4 w-4" /> <span className="text-sm font-bold">Panel Admin</span>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem className="flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer hover:bg-destructive/10 text-destructive mt-1" onClick={handleLogout}>
                       <LogOut className="h-4 w-4" /> <span className="text-sm font-medium">Cerrar Sesión</span>
                     </DropdownMenuItem>

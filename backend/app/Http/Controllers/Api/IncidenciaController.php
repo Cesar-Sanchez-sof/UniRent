@@ -57,4 +57,55 @@ class IncidenciaController extends Controller
 
         return response()->json(['message' => 'Evidencia subida.', 'path' => $path]);
     }
+
+    /**
+     * Registrar una nueva incidencia (Libro de Reclamaciones).
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'id_alquiler' => 'required|exists:alquiler,id_alquiler',
+            'descripcion' => 'required|string',
+            'gravedad'    => 'required|in:Baja,Media,Alta',
+        ]);
+
+        $user = $request->user();
+        $alquiler = \App\Models\Alquiler::with('publicacion')->findOrFail($request->id_alquiler);
+
+        // Validar que el usuario sea parte del alquiler
+        $esDueno = $alquiler->publicacion->id_usuario === $user->id_usuario;
+        $esCliente = $alquiler->id_usuario_cliente === $user->id_usuario;
+
+        if (!$esDueno && !$esCliente) {
+            return response()->json(['message' => 'No tienes permisos para reportar esta transacción.'], 403);
+        }
+
+        // El reportado es la otra persona en la transacción
+        $idUsuarioReportado = $esCliente ? $alquiler->publicacion->id_usuario : $alquiler->id_usuario_cliente;
+
+        $incidencia = Incidencia::create([
+            'id_alquiler'            => $alquiler->id_alquiler,
+            'id_usuario_reportado'   => $idUsuarioReportado,
+            'id_usuario_reportante'  => $user->id_usuario,
+            'descripcion'            => $request->descripcion,
+            'estado'                 => 'Pendiente',
+            'gravedad'               => $request->gravedad,
+        ]);
+
+        // Crear una notificación para el usuario reportado
+        try {
+            \App\Models\Notificacion::create([
+                'id_usuario'  => $idUsuarioReportado,
+                'id_alquiler' => $alquiler->id_alquiler,
+                'titulo'      => 'Nueva incidencia reportada',
+                'mensaje'     => "Se ha registrado un reclamo/incidencia sobre el alquiler de '{$alquiler->publicacion->titulo}'.",
+                'leido'       => false,
+            ]);
+        } catch (\Exception $e) {}
+
+        return response()->json([
+            'message'    => 'Incidencia registrada con éxito.',
+            'incidencia' => $incidencia,
+        ], 201);
+    }
 }
