@@ -14,6 +14,9 @@ import {
   Plus,
   X,
   ChevronDown,
+  Laptop,
+  BookOpen,
+  Camera,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,11 +38,6 @@ interface ImageFile {
   preview: string
 }
 
-const categories = [
-  { id: "1", label: "Tecnología", icon: "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" },
-  { id: "2", label: "Libros", icon: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" },
-  { id: "3", label: "Fotografía", icon: "M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z M15 13a3 3 0 11-6 0 3 3 0 016 0z" },
-]
 
 const conditions = [
   { id: "new", label: "Nuevo", desc: "Sin usar o con empaque original" },
@@ -77,6 +75,39 @@ export function PublishForm() {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
+  const [dbCategories, setDbCategories] = useState<any[]>([])
+
+  // Cargar Categorías dinámicas desde el backend
+  useEffect(() => {
+    const fetchCats = async () => {
+      try {
+        const res = await fetch(`${API_URL}/categorias`)
+        if (res.ok) {
+          const data = await res.json()
+          if (Array.isArray(data) && data.length > 0) {
+            setDbCategories(data)
+          }
+        }
+      } catch (e) {
+        console.error("Error cargando categorías:", e)
+      }
+    }
+    fetchCats()
+  }, [])
+
+  const getCategoryIcon = (id: string) => {
+    switch (id.toString()) {
+      case "1":
+        return <Laptop className="h-5 w-5" />
+      case "2":
+        return <BookOpen className="h-5 w-5" />
+      case "3":
+        return <Camera className="h-5 w-5" />
+      default:
+        return <Tag className="h-5 w-5" />
+    }
+  }
+
   const [condition, setCondition] = useState("")
   const [pricePerDay, setPricePerDay] = useState("")
   const [insuranceAmount, setInsuranceAmount] = useState<number>(0)
@@ -440,24 +471,35 @@ export function PublishForm() {
           <div className="flex flex-col gap-2">
             <Label className="text-foreground text-sm font-medium">Categoría</Label>
             <div className="grid grid-cols-3 gap-3">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setCategory(cat.id)}
-                  className={cn(
-                    "flex flex-col items-center gap-1.5 rounded-xl border-2 py-3 px-2 transition-all text-center",
-                    category === cat.id
-                      ? "border-primary bg-primary/5 text-primary"
-                      : "border-border text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                  )}
-                >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d={cat.icon} />
-                  </svg>
-                  <span className="text-[11px] font-medium leading-tight">{cat.label}</span>
-                </button>
-              ))}
+              {(dbCategories.length > 0 ? dbCategories : [
+                { id_categoria: 1, nombre: "Tecnología" },
+                { id_categoria: 2, nombre: "Libros" },
+                { id_categoria: 3, nombre: "Fotografía" }
+              ]).map((cat) => {
+                const catId = cat.id_categoria.toString()
+                const isSelected = category.toString() === catId
+                return (
+                  <button
+                    key={catId}
+                    type="button"
+                    onClick={() => setCategory(catId)}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-2 rounded-xl border-2 py-3.5 px-2 transition-all text-center cursor-pointer",
+                      isSelected
+                        ? "border-[#1e5d8c] bg-blue-50/40 text-[#1e5d8c]"
+                        : "border-border text-muted-foreground hover:border-[#1e5d8c]/30 hover:text-foreground"
+                    )}
+                  >
+                    <div className={cn(
+                      "transition-colors",
+                      isSelected ? "text-[#1e5d8c]" : "text-slate-400"
+                    )}>
+                      {getCategoryIcon(catId)}
+                    </div>
+                    <span className="text-[11px] font-bold leading-tight">{cat.nombre}</span>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
