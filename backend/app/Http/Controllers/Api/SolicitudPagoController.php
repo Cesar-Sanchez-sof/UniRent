@@ -72,6 +72,22 @@ class SolicitudPagoController extends Controller
             }
         }
 
+        // Notificar a todos los administradores del sistema
+        try {
+            $admins = \App\Models\User::where('is_admin', true)
+                ->orWhere('correo', 'admin@unirent.com')
+                ->get();
+
+            foreach ($admins as $admin) {
+                \App\Models\Notificacion::create([
+                    'id_usuario' => $admin->id_usuario,
+                    'titulo' => 'Nueva Solicitud de Pago',
+                    'mensaje' => "El usuario @{$user->username} ha registrado una solicitud de pago por S/ " . number_format($solicitud->monto, 2) . " (Op: {$solicitud->nro_operacion}).",
+                    'leido' => false
+                ]);
+            }
+        } catch (\Exception $e) {}
+
         return response()->json([
             'message' => 'Solicitud de pago registrada con éxito. Pendiente de aprobación.',
             'solicitud' => $solicitud

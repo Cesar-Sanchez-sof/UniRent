@@ -391,6 +391,9 @@ class AdminController extends Controller
                     'leido' => false
                 ]);
             } catch (\Exception $e) {}
+
+            // Eliminar de la base de datos automáticamente
+            $solicitud->delete();
         } else {
             // Notificar rechazo
             try {
