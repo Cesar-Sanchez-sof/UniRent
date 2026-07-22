@@ -113,15 +113,21 @@ export function UniRentFooter() {
 
   const handleSubmitClaim = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedRentalId) {
-      return toast({ variant: "destructive", title: "Falta selección", description: "Por favor selecciona la transacción objeto del reclamo." })
-    }
     if (!descripcion.trim()) {
       return toast({ variant: "destructive", title: "Falta descripción", description: "Por favor describe lo sucedido." })
     }
 
     setIsSubmitting(true)
     const token = localStorage.getItem('auth_token')
+
+    const claimBody: any = {
+      descripcion: descripcion,
+      gravedad: gravedad
+    }
+
+    if (selectedRentalId && selectedRentalId !== "general") {
+      claimBody.id_alquiler = Number(selectedRentalId)
+    }
 
     try {
       // 1. Crear reclamo
@@ -132,11 +138,7 @@ export function UniRentFooter() {
           "Accept": "application/json",
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          id_alquiler: Number(selectedRentalId),
-          descripcion: descripcion,
-          gravedad: gravedad
-        })
+        body: JSON.stringify(claimBody)
       })
 
       const data = await res.json()
@@ -266,29 +268,26 @@ export function UniRentFooter() {
             <form onSubmit={handleSubmitClaim} className="space-y-4 mt-2">
               
               <div className="space-y-1">
-                <Label htmlFor="reclamo-alquiler">Selecciona el Alquiler afectado:</Label>
-                {rentals.length > 0 ? (
-                  <Select value={selectedRentalId} onValueChange={setSelectedRentalId}>
-                    <SelectTrigger className="rounded-xl h-11 border border-border bg-white text-left font-medium text-xs">
-                      <SelectValue placeholder="Seleccionar transacción..." />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white max-h-[250px]">
-                      {rentals.map((r: any) => {
-                        const isClient = r.id_usuario_cliente === JSON.parse(localStorage.getItem('user') || '{}').id_usuario;
-                        const roleLabel = isClient ? 'Recibido' : 'Prestado';
-                        return (
-                          <SelectItem key={r.id_alquiler} value={r.id_alquiler.toString()} className="text-xs py-2">
-                            {r.publicacion?.titulo} ({roleLabel} - #{r.id_alquiler})
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-700 font-semibold text-center">
-                    No tienes alquileres Activos o Finalizados para reportar.
-                  </div>
-                )}
+                <Label htmlFor="reclamo-alquiler">Selecciona el Alquiler afectado (Opcional):</Label>
+                <Select value={selectedRentalId} onValueChange={setSelectedRentalId}>
+                  <SelectTrigger className="rounded-xl h-11 border border-border bg-white text-left font-medium text-xs">
+                    <SelectValue placeholder="Seleccionar transacción..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white max-h-[250px]">
+                    <SelectItem value="general" className="text-xs py-2 font-bold text-primary">
+                      Reclamo General / Plataforma (Sin Alquiler)
+                    </SelectItem>
+                    {rentals.map((r: any) => {
+                      const isClient = r.id_usuario_cliente === JSON.parse(localStorage.getItem('user') || '{}').id_usuario;
+                      const roleLabel = isClient ? 'Recibido' : 'Prestado';
+                      return (
+                        <SelectItem key={r.id_alquiler} value={r.id_alquiler.toString()} className="text-xs py-2">
+                          {r.publicacion?.titulo} ({roleLabel} - #{r.id_alquiler})
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-1">
@@ -369,7 +368,7 @@ export function UniRentFooter() {
                 </Button>
                 <Button 
                   type="submit" 
-                  disabled={isSubmitting || rentals.length === 0} 
+                  disabled={isSubmitting} 
                   className="rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold px-6 text-xs"
                 >
                   {isSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}

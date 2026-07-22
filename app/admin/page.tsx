@@ -1023,9 +1023,15 @@ export default function AdminDashboard() {
 
                 <div className="border p-4 rounded-2xl space-y-1 bg-red-50/10 border-red-100">
                   <h4 className="text-[10px] uppercase tracking-wider font-black text-red-700">Reportado (Presunto Infractor)</h4>
-                  <p className="text-xs font-bold text-slate-900">{selectedClaim.usuario_reportado?.primer_nombre} {selectedClaim.usuario_reportado?.primer_apellido}</p>
-                  <p className="text-[10px] text-slate-500">Cel: {selectedClaim.usuario_reportado?.telefono}</p>
-                  <p className="text-[10px] text-slate-500">{selectedClaim.usuario_reportado?.correo}</p>
+                  {selectedClaim.usuario_reportado ? (
+                    <>
+                      <p className="text-xs font-bold text-slate-900">{selectedClaim.usuario_reportado.primer_nombre} {selectedClaim.usuario_reportado.primer_apellido}</p>
+                      <p className="text-[10px] text-slate-500">Cel: {selectedClaim.usuario_reportado.telefono}</p>
+                      <p className="text-[10px] text-slate-500">{selectedClaim.usuario_reportado.correo}</p>
+                    </>
+                  ) : (
+                    <p className="text-xs font-bold text-slate-500">Reclamo General (Sin infractor)</p>
+                  )}
                 </div>
               </div>
 
@@ -1131,14 +1137,16 @@ export default function AdminDashboard() {
                   >
                     WhatsApp Reportante
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="rounded-xl border-slate-200 font-bold text-xs"
-                    onClick={() => window.open(`https://wa.me/51${selectedClaim.usuario_reported?.telefono || selectedClaim.usuario_reportado?.telefono}?text=Hola ${selectedClaim.usuario_reported?.primer_nombre || selectedClaim.usuario_reportado?.primer_nombre}, te contacto del soporte de UniRent sobre la incidencia #${selectedClaim.id_incidencia} reportada en tu contra.`, '_blank')}
-                  >
-                    WhatsApp Reportado
-                  </Button>
+                  {selectedClaim.usuario_reportado && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="rounded-xl border-slate-200 font-bold text-xs"
+                      onClick={() => window.open(`https://wa.me/51${selectedClaim.usuario_reported?.telefono || selectedClaim.usuario_reportado?.telefono}?text=Hola ${selectedClaim.usuario_reported?.primer_nombre || selectedClaim.usuario_reportado?.primer_nombre}, te contacto del soporte de UniRent sobre la incidencia #${selectedClaim.id_incidencia} reportada en tu contra.`, '_blank')}
+                    >
+                      WhatsApp Reportado
+                    </Button>
+                  )}
                 </div>
               </div>
 
