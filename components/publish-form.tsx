@@ -78,7 +78,7 @@ export function PublishForm() {
   useEffect(() => {
     const fetchCats = async () => {
       try {
-        const res = await fetch(`${API_URL}/categorias`)
+        const res = await fetch(`${API_URL}/categorias?_t=${Date.now()}`)
         if (res.ok) {
           const data = await res.json()
           if (Array.isArray(data) && data.length > 0) {

@@ -15,7 +15,7 @@ export function CategoryFilters({ onCategoryChange }: CategoryFiltersProps) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`${API_URL}/categorias`)
+        const response = await fetch(`${API_URL}/categorias?_t=${Date.now()}`)
         if (response.ok) {
           const data = await response.json()
           setCategories(data)
