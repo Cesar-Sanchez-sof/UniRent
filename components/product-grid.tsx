@@ -30,7 +30,7 @@ export function ProductGrid({ onProductClick, selectedCategoryId, searchTerm }: 
       const token = localStorage.getItem('auth_token')
       
       try {
-        let url = `${API_URL}/publicaciones?`
+        let url = `${API_URL}/publicaciones?_t=${Date.now()}&`
         if (selectedCategoryId) url += `id_categoria=${selectedCategoryId}&`
         if (debouncedSearch) url += `search=${encodeURIComponent(debouncedSearch)}`
 
