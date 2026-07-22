@@ -104,6 +104,15 @@ function ProfileContent() {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
   const [reviewData, setReviewData] = useState({ calificacion: 5, comentario: "", tipo: 'cliente' as 'cliente' | 'dueno' })
 
+  // Reclamos / Incidencias
+  const [showReportModal, setShowReportModal] = useState(false)
+  const [selectedRentalForReport, setSelectedRentalForReport] = useState<any>(null)
+  const [reportData, setReportData] = useState({ descripcion: "", gravedad: "Media" as "Baja" | "Media" | "Alta" })
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false)
+  const [reportEvidence, setReportEvidence] = useState<File | null>(null)
+  const [reportEvidencePreview, setReportEvidencePreview] = useState<string | null>(null)
+  const reportFileInputRef = useRef<HTMLInputElement>(null)
+
   // Estados para la foto
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [tempFile, setTempFile] = useState<File | null>(null)
@@ -276,6 +285,69 @@ function ProfileContent() {
         toast({ variant: "destructive", title: "Error", description: data.message || "No se pudo enviar la reseña" })
       }
     } finally { setIsSubmittingReview(false) }
+  }
+
+  const handleOpenReportModal = (rental: any) => {
+    setSelectedRentalForReport(rental)
+    setReportData({ descripcion: "", gravedad: "Media" })
+    setReportEvidence(null)
+    setReportEvidencePreview(null)
+    setShowReportModal(true)
+  }
+
+  const handleSubmitReport = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!reportData.descripcion) {
+      return toast({ variant: "destructive", title: "Falta descripción", description: "Por favor describe el inconveniente." })
+    }
+    setIsSubmittingReport(true)
+    const token = localStorage.getItem('auth_token')
+    try {
+      const response = await fetch(`${API_URL}/incidencias`, {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${token}`, 
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id_alquiler: selectedRentalForReport.id_alquiler,
+          descripcion: reportData.descripcion,
+          gravedad: reportData.gravedad
+        })
+      })
+      
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || "Error al registrar la incidencia")
+      }
+      
+      if (reportEvidence) {
+        const formEvidence = new FormData()
+        formEvidence.append('foto', reportEvidence)
+        const evResponse = await fetch(`${API_URL}/incidencias/${data.incidencia.id_incidencia}/evidence`, {
+          method: "POST",
+          headers: { 
+            "Authorization": `Bearer ${token}`, 
+            "Accept": "application/json" 
+          },
+          body: formEvidence
+        })
+        if (!evResponse.ok) {
+          console.error("Error subiendo evidencia")
+        }
+      }
+      
+      toast({ title: "Incidencia registrada", description: "Tu reclamo ha sido enviado al administrador para investigación." })
+      setShowReportModal(false)
+      fetchMyRentals()
+      fetchIncomingRentals()
+    } catch (err: any) {
+      toast({ variant: "destructive", title: "Error", description: err.message || "No se pudo registrar la incidencia" })
+    } finally {
+      setIsSubmittingReport(false)
+    }
   }
 
   const handleEditClick = (pub: any) => {
@@ -583,6 +655,16 @@ function ProfileContent() {
                                 <Star className="h-3.5 w-3.5" /> Dejar Reseña
                               </Button>
                             )}
+                            {(rental.estado === 'Activo' || rental.estado === 'Finalizado') && (
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => handleOpenReportModal(rental)} 
+                                className={cn("rounded-xl gap-2 h-8 px-3 text-xs border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800", (!rental.publicacion?.usuario?.telefono && rental.estado !== 'Finalizado') && "ml-auto")}
+                              >
+                                <AlertCircle className="h-3.5 w-3.5 animate-pulse" /> Reclamo
+                              </Button>
+                            )}
                             {rental.resenas?.find((r: any) => r.tipo === 'cliente') && (
                               <div className="ml-auto flex items-center gap-1 text-primary font-bold text-xs bg-primary/5 px-3 rounded-xl border border-primary/10 h-8">
                                 <Star className="h-3.5 w-3.5 fill-current text-amber-400" /> {Number(rental.resenas.find((r: any) => r.tipo === 'cliente').calificacion).toFixed(1)}
@@ -668,6 +750,16 @@ function ProfileContent() {
                               )}
                               {req.estado === 'Finalizado' && !req.resenas?.find((r: any) => r.tipo === 'dueno') && (
                                 <Button size="sm" onClick={() => handleOpenReview(req, 'dueno')} className="rounded-xl bg-primary hover:bg-primary/90 h-9 px-4 font-bold transition-all hover:shadow-lg"><Star className="h-4 w-4 mr-2" /> Calificar Cliente</Button>
+                              )}
+                              {(req.estado === 'Activo' || req.estado === 'Finalizado') && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleOpenReportModal(req)} 
+                                  className="rounded-xl border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 h-9 px-4 font-bold"
+                                >
+                                  <AlertCircle className="h-4 w-4 mr-2" /> Reclamo
+                                </Button>
                               )}
                               {req.resenas?.find((r: any) => r.tipo === 'dueno') && (
                                 <div className="flex items-center gap-1.5 text-primary font-bold text-xs bg-primary/5 px-4 rounded-xl border border-primary/10 h-9">
@@ -1066,6 +1158,100 @@ function ProfileContent() {
                     <Check className="h-5 w-5" /> Publicar Reseña
                   </>
                 )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Reportar Incidencia */}
+      <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
+        <DialogContent className="rounded-3xl sm:max-w-md p-6 bg-white border border-border shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-5 w-5 animate-pulse" /> Libro de Reclamaciones
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground font-medium">
+              Reporta un artículo defectuoso, daños o problemas durante el alquiler. La administración revisará tus evidencias.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmitReport} className="space-y-4 mt-4">
+            <div className="space-y-1">
+              <Label htmlFor="report-descripcion">Cuéntanos qué sucedió:</Label>
+              <textarea
+                id="report-descripcion"
+                required
+                rows={4}
+                className="w-full text-sm rounded-xl border border-border p-3 focus:ring-2 focus:ring-primary/20 outline-none bg-background resize-none min-h-[100px]"
+                placeholder="Ej: El equipo no enciende / Tiene rayaduras que no estaban antes del alquiler / El cliente lo devolvió roto..."
+                value={reportData.descripcion}
+                onChange={e => setReportData({ ...reportData, descripcion: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="report-gravedad">Gravedad del Problema:</Label>
+              <Select value={reportData.gravedad} onValueChange={(val: any) => setReportData({ ...reportData, gravedad: val })}>
+                <SelectTrigger className="rounded-xl h-11 border border-border bg-white text-left font-medium">
+                  <SelectValue placeholder="Selecciona la gravedad" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="Baja">Baja (Detalles cosméticos mínimos)</SelectItem>
+                  <SelectItem value="Media">Media (Falla de accesorios, rayones notables)</SelectItem>
+                  <SelectItem value="Alta">Alta (Inservible, pérdida, daño grave)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Subir Evidencia Visual (Foto):</Label>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl gap-2 border-border"
+                  onClick={() => reportFileInputRef.current?.click()}
+                >
+                  <Camera className="h-4 w-4" /> Seleccionar Foto
+                </Button>
+                <input
+                  type="file"
+                  ref={reportFileInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={e => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      setReportEvidence(file)
+                      setReportEvidencePreview(URL.createObjectURL(file))
+                    }
+                  }}
+                />
+                {reportEvidence && (
+                  <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                    {reportEvidence.name}
+                  </span>
+                )}
+              </div>
+              {reportEvidencePreview && (
+                <div className="relative mt-2 h-32 w-full rounded-xl overflow-hidden border">
+                  <img src={reportEvidencePreview} alt="Vista previa de evidencia" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => { setReportEvidence(null); setReportEvidencePreview(null); }}
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0 mt-6 flex justify-end">
+              <Button type="button" variant="ghost" onClick={() => setShowReportModal(false)} className="rounded-xl">
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isSubmittingReport} className="rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold px-6">
+                {isSubmittingReport ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Enviar Reclamo
               </Button>
             </DialogFooter>
           </form>
